@@ -1,0 +1,40 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group = 'it.fulminazzo'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+}
+
+jar {
+    manifest {
+        attributes(
+                "Main-Class": "${project.group}.${project.name.toLowerCase()}.${project.name}"
+        )
+    }
+}
+
+build {
+    dependsOn(publishToMavenLocal)
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = "${group}"
+            artifactId = "${name}"
+            version = "${version}"
+
+            from components.java
+        }
+    }
+}
