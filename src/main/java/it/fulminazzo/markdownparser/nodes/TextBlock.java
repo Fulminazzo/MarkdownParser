@@ -17,9 +17,6 @@ public class TextBlock extends TextNode {
     public String serialize() {
         String serialize = super.serialize();
         if (serialize != null && !serialize.trim().isEmpty()) {
-            serialize = serialize
-                    .replace(" \n", "\n")
-                    .replace("\n", " ");
             serialize += Constants.TEXT_SEPARATOR;
         }
         return serialize;

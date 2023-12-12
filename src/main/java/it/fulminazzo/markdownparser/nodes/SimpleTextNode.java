@@ -12,7 +12,7 @@ public class SimpleTextNode extends Node {
 
     @Override
     public String serialize() {
-        return text;
+        return text.replace("\n", " ");
     }
 
     @Override

@@ -9,13 +9,27 @@ import java.util.*;
 public abstract class Node {
     protected Node nextNode;
 
+    public Node getLastNode() {
+        return nextNode == null ? this : nextNode.getLastNode();
+    }
+
     public void addNode(Node node) {
         if (node == null) return;
         Node prev = nextNode;
-        if (prev == null) nextNode = node;
-        else {
+        if (prev == null) {
+            if (this.getClass().equals(node.getClass()) && this.getClass().equals(SimpleTextNode.class)) {
+                SimpleTextNode prevNode = (SimpleTextNode) this;
+                SimpleTextNode nodeText = (SimpleTextNode) node;
+                prevNode.setText(prevNode.text + nodeText.text);
+            } else this.nextNode = node;
+        } else {
             while (prev.getNextNode() != null) prev = prev.getNextNode();
-            prev.nextNode = node;
+            if (prev.getClass().equals(node.getClass()) && prev.getClass().equals(SimpleTextNode.class)) {
+                SimpleTextNode prevNode = (SimpleTextNode) prev;
+                SimpleTextNode nodeText = (SimpleTextNode) node;
+                prevNode.setText(prevNode.text + nodeText.text);
+            }
+            else prev.nextNode = node;
         }
     }
 
