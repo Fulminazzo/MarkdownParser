@@ -6,6 +6,8 @@ import lombok.Getter;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Getter
 public class TextNode extends ContainerNode {
@@ -19,15 +21,25 @@ public class TextNode extends ContainerNode {
         setText(text, textType);
     }
 
+    public TextNode(String text, TextType textType, boolean checkHeader) {
+        setText(text, textType, checkHeader);
+    }
+
     public void setText(String text) {
         setText(text, TextType.NORMAL);
     }
 
     public void setText(String text, TextType textType) {
-        if (text == null) return;
+        setText(text, textType, true);
+    }
+
+    public void setText(String rawText, TextType textType, boolean checkHeader) {
+        if (rawText == null) return;
         if (textType == null) textType = TextType.NORMAL;
-        String[] lines = text.split(Constants.TEXT_SEPARATOR);
-        text = lines[0];
+        /*final String[] lines = rawText.split(Constants.TEXT_SEPARATOR);
+        String text = lines[0];
+        if (lines.length > 1) text += "\n";*/
+        String text = rawText;
         this.textType = textType;
 
         char[] chars = text.toCharArray();
@@ -36,17 +48,35 @@ public class TextNode extends ContainerNode {
             char c = chars[i];
             textContent += c;
 
-            String res = parseCodeBlock(text.substring(0, i - textContent.length() + 1),
-                    text.substring(i + 1),
-                    textContent, false);
-            if (res == null) {
-                if (isStartingCode(textContent)) continue;
-                res = parseComment(textContent, false);
-            }
+            String res = parseCodeBlock(i == chars.length - 1 ? "" : chars[i] + "", textContent, false);
+            if (res == null) res = parseComment(textContent, false);
             if (res != null) {
                 textContent = res;
                 continue;
             } else if (isStartingComment(textContent)) continue;
+
+            if (checkHeader) {
+                //System.out.println(String.format("Content: \"%s\"", Arrays.toString(textContent.split("\n"))));
+                String[] t = textContent.split("\n");
+                if (t.length > 0 && t[t.length - 1].matches(Constants.HEADER_REGEX)) {
+                    addChildNode(new TextNode(String.join("\n", Arrays.copyOfRange(t, 0, t.length - 1))));
+                    addNode(new HeaderNode(rawText));
+                    return;
+                }
+            }
+
+            String next = i == chars.length - 1 ? "" : chars[i + 1] + "";
+            for (int t = 1; t < Constants.MAX_TABLE_LENGTH; t++) {
+                final String TABLE_REGEX = Constants.getTableRegex(t);
+                Pattern tablePattern = Pattern.compile(TABLE_REGEX);
+                if (tablePattern.matcher(textContent).find() && !tablePattern.matcher(textContent + next).find()) {
+                    String[] tmp = textContent.split(TABLE_REGEX);
+                    addChildNode(new TextNode(tmp[0]));
+                    addNode(new TableNode(rawText.substring(i + 1)));
+                    return;
+                }
+            }
+
             String innerContent = TextType.convertString(text.substring(i)
                     .replace("<", "<<")
                     .replace(">", ">>")
@@ -75,90 +105,48 @@ public class TextNode extends ContainerNode {
         }
 
         if (!textContent.isEmpty() && !textContent.equals("\n")) {
-            String res = null;
-            if (isStartingCode(textContent))
-                res = parseCodeBlock(text.substring(0, text.length() - textContent.length()), "", textContent, true);
+            textContent += Constants.TEXT_SEPARATOR;
+            for (int t = 1; t < Constants.MAX_TABLE_LENGTH; t++) {
+                final String TABLE_REGEX = Constants.getTableRegex(t);
+                Pattern tablePattern = Pattern.compile(TABLE_REGEX);
+                if (tablePattern.matcher(textContent).find()) {
+                    String[] tmp = textContent.split(TABLE_REGEX);
+                    addChildNode(new TextNode(tmp[0]));
+                    addNode(new TableNode(rawText.substring(chars.length - textContent.length() + 2)));
+                    return;
+                }
+            }
+            textContent = textContent.substring(0, textContent.length() - Constants.TEXT_SEPARATOR.length());
+            String res = parseCodeBlock("", textContent, true);
             if (res == null) res = parseComment(textContent, true);
             if (res == null || !res.isEmpty()) addChildNode(new SimpleTextNode(textContent));
         }
 
-        if (lines.length > 1) {
+        /*if (lines.length > 1) {
             String otherLines = String.join(Constants.TEXT_SEPARATOR, Arrays.copyOfRange(lines, 1, lines.length));
             addNode(new TextBlock(otherLines));
-        }
+        }*/
     }
 
-    private String parseCodeBlock(String prev, String next, String textContent, boolean force) {
-        if (textContent.contains("\n")) {
-            String codeSep = Constants.CODE_SEPARATOR;
-            if (textContent.length() <= codeSep.length() * 2) return null;
-            String finalTextContent = textContent.substring(0, textContent.length() - codeSep.length());
-            String codeTextContent = finalTextContent.substring(codeSep.length());
-
-            if ((textContent.endsWith(codeSep) || force) && !next.equals(codeSep)) {
-                if (textContent.startsWith(codeSep)) {
-                    String[] tmp = prev.split("\n");
-                    prev = prev.endsWith("\n") ? "" : tmp[tmp.length - 1];
-                    if (textContent.contains("\n")) {
-                        if (prev.matches("^[\t\n\\s]*$")) {
-                            if (next.split("\n")[0].matches("^[\t\n\\s]*$")) {
-                                if (force) addChildNode(new CodeBlock(textContent));
-                                else if (textContent.endsWith("\n" + codeSep))
-                                    addChildNode(new CodeBlock(finalTextContent));
-                                return "";
-                            }
-                        } else {
-                            addChildNode(new SimpleTextNode(codeSep + finalTextContent.substring(codeSep.length())));
-                            return codeSep;
-                        }
-                    } else {
-                        addChildNode(new CodeBlock(codeTextContent));
-                        return "";
-                    }
-                } else if (!force) {
-                    addChildNode(new SimpleTextNode(finalTextContent));
-                    return codeSep;
-                }
-            }
-        } else if (!force) {
-            next = next.isEmpty() ? "" : next.charAt(0) + "";
-            for (String codeSep : Constants.getCodeSeparators()) {
-                if (textContent.length() <= codeSep.length() * 2) continue;
-                String finalTextContent = textContent.substring(0, textContent.length() - codeSep.length());
-                String codeTextContent = finalTextContent.substring(codeSep.length());
-                if (codeTextContent.replace(codeSep, "").isEmpty()) continue;
-                if (next.equals(codeSep)) continue;
-
-                if (textContent.endsWith(codeSep)) {
-                    if (textContent.startsWith(codeSep)) {
-                        String[] tmp = prev.split("\n");
-                        prev = prev.endsWith("\n") ? "" : tmp[tmp.length - 1];
-                        if (textContent.contains("\n")) {
-                            if (prev.matches("^[\t\n\\s]*$")) {
-                                if (textContent.endsWith("\n" + codeSep)) addChildNode(new CodeBlock(finalTextContent));
-                                return "";
-                            } else {
-                                addChildNode(new SimpleTextNode(codeSep + finalTextContent.substring(codeSep.length())));
-                                return codeSep;
-                            }
-                        } else {
-                            addChildNode(new CodeBlock(codeTextContent));
-                            return "";
-                        }
-                    } else {
-                        addChildNode(new SimpleTextNode(finalTextContent));
-                        return codeSep;
-                    }
-                }
+    private String parseCodeBlock(String next, String textContent, boolean force) {
+        if (force) next += "\n";
+        Matcher match = Pattern.compile(Constants.CODE_REGEX_MULTIPLE_LINES).matcher(textContent + next);
+        if (match.find()) {
+            String[] tmp = (textContent + next).split(Constants.CODE_REGEX_MULTIPLE_LINES);
+            if (tmp.length > 0) addChildNode(new SimpleTextNode(tmp[0]));
+            addChildNode(new CodeBlock(match.group(1)));
+            return force ? "" : next;
+        }
+        for (String regex : Arrays.asList(Constants.CODE_REGEX_SINGLE, Constants.CODE_REGEX_MULTIPLE)) {
+            Matcher matcher = Pattern.compile(regex).matcher(textContent);
+            if (matcher.find()) {
+                String[] tmp = textContent.split(regex);
+                if (tmp.length > 0) addChildNode(new SimpleTextNode(tmp[0] + matcher.group(1)));
+                addChildNode(new CodeBlock(matcher.group(2)));
+                return "";
             }
         }
         return null;
-    }
-
-    private boolean isStartingCode(String textContent) {
-        for (String s : Constants.getCodeSeparators())
-            if (textContent.startsWith(s)) return true;
-        return false;
     }
 
     private String parseComment(String textContent, boolean force) {
@@ -181,6 +169,13 @@ public class TextNode extends ContainerNode {
 
     private boolean isStartingComment(String textContent) {
         return Arrays.stream(Constants.getCommentsSeparators()).anyMatch(s -> textContent.startsWith(s[0]));
+    }
+
+    public boolean isEmpty() {
+        if (childNode == null) return true;
+        if (childNode instanceof TextNode) return ((TextNode) childNode).isEmpty();
+        if (childNode instanceof SimpleTextNode) return ((SimpleTextNode) childNode).text.isEmpty();
+        return false;
     }
 
     @Override

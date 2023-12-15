@@ -1,9 +1,12 @@
 package it.fulminazzo.markdownparser.nodes;
 
 import it.fulminazzo.markdownparser.utils.Constants;
+import it.fulminazzo.markdownparser.utils.NodeUtils;
 import lombok.Getter;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Getter
 public abstract class Node {
@@ -15,27 +18,20 @@ public abstract class Node {
 
     public void addNode(Node node) {
         if (node == null) return;
-        Node prev = nextNode;
-        if (prev == null) {
-            if (this.getClass().equals(node.getClass()) && this.getClass().equals(SimpleTextNode.class)) {
-                SimpleTextNode prevNode = (SimpleTextNode) this;
-                SimpleTextNode nodeText = (SimpleTextNode) node;
-                prevNode.setText(prevNode.text + nodeText.text);
-            } else this.nextNode = node;
-        } else {
-            while (prev.getNextNode() != null) prev = prev.getNextNode();
-            if (prev.getClass().equals(node.getClass()) && prev.getClass().equals(SimpleTextNode.class)) {
-                SimpleTextNode prevNode = (SimpleTextNode) prev;
-                SimpleTextNode nodeText = (SimpleTextNode) node;
-                prevNode.setText(prevNode.text + nodeText.text);
-            }
-            else prev.nextNode = node;
-        }
+        Node prev = this;
+        while (prev.getNextNode() != null) prev = prev.getNextNode();
+        if (node.getClass().equals(SimpleTextNode.class) && prev.getClass().equals(node.getClass())) {
+            SimpleTextNode nodeText = (SimpleTextNode) node;
+            SimpleTextNode prevNode = (SimpleTextNode) prev;
+            prevNode.setText(prevNode.text + nodeText.text);
+        } else prev.nextNode = node;
+        checkNodes();
     }
 
     public void removeNode(Node node) {
-        if (node == null || nextNode == null) return;
+        if (node == null) return;
         if (node.equals(nextNode)) nextNode = nextNode.getNextNode();
+        if (nextNode == null) return;
         Node prev = nextNode;
         Node current = nextNode.getNextNode();
         while (current != null) {
@@ -43,6 +39,19 @@ public abstract class Node {
             prev = current;
             current = current.getNextNode();
         }
+        checkNodes();
+    }
+
+    public void checkNodes() {
+        nextNode = NodeUtils.correctNodes(nextNode);
+        if (this instanceof ContainerNode) ((ContainerNode) this).checkChildNodes();
+    }
+
+    public Node findNode(Class<? extends Node> nodeClass) {
+        if (nodeClass == null) return null;
+        Node node = this;
+        while (node != null && !node.getClass().equals(nodeClass)) node = node.nextNode;
+        return node;
     }
 
     protected LinkedHashMap<String, String> getMapContents() {
@@ -70,8 +79,10 @@ public abstract class Node {
         LinkedList<String> keys = new LinkedList<>(hashMap.keySet());
         for (String key : keys) {
             String value = hashMap.get(key);
-            if (value != null) output += String.format("\n%s: %s", key, value);
-            if (!keys.getLast().equalsIgnoreCase(key)) output += ",";
+            if (value != null) {
+                output += String.format("\n%s: %s", key, value);
+                if (!keys.getLast().equalsIgnoreCase(key)) output += ",";
+            }
         }
         output = output.replace("\n", "\n" + Constants.SEPARATOR);
         output += "\n}";

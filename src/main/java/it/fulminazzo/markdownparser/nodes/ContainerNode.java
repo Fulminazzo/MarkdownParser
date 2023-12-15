@@ -21,12 +21,22 @@ public abstract class ContainerNode extends Node {
     }
 
     public void addChildNode(Node node) {
+        if (node == null) return;
         if (childNode == null) childNode = node;
         else childNode.addNode(node);
+        childNode.checkNodes();
     }
 
     public void removeChildNode(Node node) {
-        if (childNode != null) childNode.removeNode(node);
+        if (node == null) return;
+        if (childNode != null) {
+            childNode.removeNode(node);
+            childNode.checkNodes();
+        }
+    }
+    
+    protected void checkChildNodes() {
+        childNode = NodeUtils.correctNodes(childNode);
     }
 
     @Override
@@ -46,6 +56,8 @@ public abstract class ContainerNode extends Node {
         Node node = childNode;
         while (node != null) {
             output += node.serialize();
+            if ((node instanceof TextBlock || node.getNextNode() instanceof TextBlock) && !output.endsWith(Constants.TEXT_SEPARATOR))
+                output = output + Constants.TEXT_SEPARATOR;
             node = node.getNextNode();
         }
         return output;

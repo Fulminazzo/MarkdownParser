@@ -15,6 +15,7 @@ public class RootNode extends ContainerNode {
 
     public RootNode(String rawText) {
         super(rawText);
+        checkNodes();
     }
 
     @Override
