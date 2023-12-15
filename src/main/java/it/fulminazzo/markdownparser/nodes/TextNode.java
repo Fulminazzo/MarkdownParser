@@ -36,10 +36,10 @@ public class TextNode extends ContainerNode {
     public void setText(String rawText, TextType textType, boolean checkHeader) {
         if (rawText == null) return;
         if (textType == null) textType = TextType.NORMAL;
-        /*final String[] lines = rawText.split(Constants.TEXT_SEPARATOR);
+        rawText = Constants.compressRawText(rawText);
+        final String[] lines = rawText.split(Constants.TEXT_SEPARATOR);
         String text = lines[0];
-        if (lines.length > 1) text += "\n";*/
-        String text = rawText;
+        if (lines.length > 1) text += "\n";
         this.textType = textType;
 
         char[] chars = text.toCharArray();
@@ -48,31 +48,30 @@ public class TextNode extends ContainerNode {
             char c = chars[i];
             textContent += c;
 
-            String res = parseCodeBlock(i == chars.length - 1 ? "" : chars[i] + "", textContent, false);
+            // TABLES
+            String next = i == chars.length - 1 ? "" : chars[i + 1] + "";
+            String res = parseTable(next, textContent);
+            if (res != null && res.isEmpty()) {
+                addNode(new TableNode(rawText.substring(i + 1)));
+                return;
+            }
+
+            // CODE AND COMMENTS
+            //String res = parseCodeBlock(i == chars.length - 1 ? "" : chars[i + 1] + "", textContent, false);
+            if (res == null) res = parseCodeBlock(next, textContent, false);
             if (res == null) res = parseComment(textContent, false);
             if (res != null) {
                 textContent = res;
                 continue;
             } else if (isStartingComment(textContent)) continue;
 
+            // HEADERS
             if (checkHeader) {
                 //System.out.println(String.format("Content: \"%s\"", Arrays.toString(textContent.split("\n"))));
                 String[] t = textContent.split("\n");
                 if (t.length > 0 && t[t.length - 1].matches(Constants.HEADER_REGEX)) {
                     addChildNode(new TextNode(String.join("\n", Arrays.copyOfRange(t, 0, t.length - 1))));
                     addNode(new HeaderNode(rawText));
-                    return;
-                }
-            }
-
-            String next = i == chars.length - 1 ? "" : chars[i + 1] + "";
-            for (int t = 1; t < Constants.MAX_TABLE_LENGTH; t++) {
-                final String TABLE_REGEX = Constants.getTableRegex(t);
-                Pattern tablePattern = Pattern.compile(TABLE_REGEX);
-                if (tablePattern.matcher(textContent).find() && !tablePattern.matcher(textContent + next).find()) {
-                    String[] tmp = textContent.split(TABLE_REGEX);
-                    addChildNode(new TextNode(tmp[0]));
-                    addNode(new TableNode(rawText.substring(i + 1)));
                     return;
                 }
             }
@@ -106,31 +105,60 @@ public class TextNode extends ContainerNode {
 
         if (!textContent.isEmpty() && !textContent.equals("\n")) {
             textContent += Constants.TEXT_SEPARATOR;
-            for (int t = 1; t < Constants.MAX_TABLE_LENGTH; t++) {
-                final String TABLE_REGEX = Constants.getTableRegex(t);
-                Pattern tablePattern = Pattern.compile(TABLE_REGEX);
-                if (tablePattern.matcher(textContent).find()) {
-                    String[] tmp = textContent.split(TABLE_REGEX);
-                    addChildNode(new TextNode(tmp[0]));
-                    addNode(new TableNode(rawText.substring(chars.length - textContent.length() + 2)));
-                    return;
-                }
+            String res = parseTable("", textContent);
+            if (res != null && res.isEmpty()) {
+                addNode(new TableNode(rawText.substring(chars.length - textContent.length() + 2)));
+                return;
             }
             textContent = textContent.substring(0, textContent.length() - Constants.TEXT_SEPARATOR.length());
-            String res = parseCodeBlock("", textContent, true);
+            if (res == null) res = parseCodeBlock("", textContent, true);
             if (res == null) res = parseComment(textContent, true);
             if (res == null || !res.isEmpty()) addChildNode(new SimpleTextNode(textContent));
         }
 
-        /*if (lines.length > 1) {
+        if (lines.length > 1) {
             String otherLines = String.join(Constants.TEXT_SEPARATOR, Arrays.copyOfRange(lines, 1, lines.length));
             addNode(new TextBlock(otherLines));
-        }*/
+        }
+    }
+
+    private String parseTable(String next, String textContent) {
+        for (int i = 1; i < Constants.MAX_TABLE_LENGTH; i++) {
+            String TABLE_REGEX = Constants.getTableRegex(i);
+            Pattern tablePattern = Pattern.compile(TABLE_REGEX);
+            if (tablePattern.matcher(textContent).find() && !tablePattern.matcher(textContent + next).find()) {
+                String[] tmp = textContent.split(TABLE_REGEX);
+                if (tmp.length > 0) addChildNode(new TextNode(tmp[0]));
+                return "";
+            } else {
+                TABLE_REGEX = Constants.TABLE_REGEX_BASE64.replace("_N", "_" + i);
+                tablePattern = Pattern.compile(TABLE_REGEX);
+                Matcher matcher = tablePattern.matcher(textContent);
+                if (matcher.find()) {
+                    String[] tmp = textContent.split(TABLE_REGEX);
+                    if (tmp.length > 0) addChildNode(new TextNode(tmp[0]));
+                    return "";
+                }
+            }
+            if (textContent.endsWith("<TABLE_" + i)) {
+                addChildNode(new TextNode(textContent.substring(0, textContent.length() - "<TABLE".length() - 1)));
+                return "<TABLE_" + i;
+            }
+            if (textContent.endsWith("<TABLE_")) return "<TABLE_";
+        }
+        return null;
     }
 
     private String parseCodeBlock(String next, String textContent, boolean force) {
         if (force) next += "\n";
-        Matcher match = Pattern.compile(Constants.CODE_REGEX_MULTIPLE_LINES).matcher(textContent + next);
+        Matcher match = Pattern.compile(Constants.CODE_REGEX_BASE64).matcher(textContent + next);
+        if (match.find()) {
+            String[] tmp = (textContent + next).split(Constants.CODE_REGEX_BASE64);
+            if (tmp.length > 0) addChildNode(new SimpleTextNode(tmp[0]));
+            addChildNode(new CodeBlock(Constants.decompressCodeBlocks(Constants.formatCodeBlock(match.group(1)))));
+            return force ? "" : next;
+        }
+        match = Pattern.compile(Constants.CODE_REGEX_MULTIPLE_LINES).matcher(textContent + next);
         if (match.find()) {
             String[] tmp = (textContent + next).split(Constants.CODE_REGEX_MULTIPLE_LINES);
             if (tmp.length > 0) addChildNode(new SimpleTextNode(tmp[0]));

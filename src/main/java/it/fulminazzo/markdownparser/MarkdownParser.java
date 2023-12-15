@@ -38,7 +38,7 @@ public class MarkdownParser {
             Matcher matcher = Pattern.compile(Constants.HEADER_REGEX).matcher(text);
             return;
         }
-        InputStream file = MarkdownParser.class.getResourceAsStream("/test2.md");
+        InputStream file = MarkdownParser.class.getResourceAsStream("/test1.md");
         String content = new String(file.readAllBytes());
         file.close();
 
@@ -83,7 +83,6 @@ public class MarkdownParser {
                     //System.out.println(String.format("CONTENT:\n%s\n:CONTENT", content));
                 } else matcher = null;
             } while (matcher != null);
-            System.out.println(text);
             return;
         }
 
@@ -137,18 +136,30 @@ public class MarkdownParser {
                 "    System.out.println(\"Simple java code\");\n" +
                 "}\n" +
                 "``` ";*/
-        content = "# Hello world\n" +
+        /*content = "# Hello world\n" +
                 "This is my text\n" +
                 "\n" +
                 "```yaml\n" +
                 "\n" +
                 "\n" +
-                " This is a beautiful yaml comment\n" +
-                "```\n\n" /*+
+                "# This is a beautiful yaml comment\n" +
+                "```\n\n" *//*+
                 "\n" +
                 "# What\n" +
-                "The fuck";*/
-        ;
+                "The fuck";*//*
+        ;*/
+        content = "\n" +
+                "|Table|\n" +
+                "                       | - |\n" +
+                "| Outstanding table | \n" +
+                "ok rip nice\n" +
+                "\n" +
+                "| `Simple2` Table |\n" +
+                "| - |\n" +
+                "| Working table|\n" +
+                "| Workin2 table|\n" +
+                "| Workin3 table|\n" +
+                "| Workin4 table|";
 
         Node node = new RootNode(content);
         System.out.println(node);

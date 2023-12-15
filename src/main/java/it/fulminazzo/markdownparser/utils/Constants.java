@@ -1,7 +1,10 @@
 package it.fulminazzo.markdownparser.utils;
 
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.DuplicateFormatFlagsException;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,6 +16,7 @@ public class Constants {
     public static final String CODE_REGEX_SINGLE = "([^`]|^)`((?:[^`\n])+)`(?:[^`]|$)";
     public static final String CODE_REGEX_MULTIPLE = "([^`]|^)```((?:[^`\n])+)```(?:[^`]|$)";
     public static final String CODE_REGEX_MULTIPLE_LINES = "(?:^|\n) *```([\n-~ ]*)``` *\n";
+    public static final String CODE_REGEX_BASE64 = ".*<CODE>(.*)</CODE>.*";
     public static final String COMMENT_1_OPENING = "<!--";
     public static final String COMMENT_1_CLOSING = "-->";
     public static final String COMMENT_2_OPENING = "[//]: # (";
@@ -20,9 +24,10 @@ public class Constants {
     public static final String LINK_REGEX = "\\[([^\\]]*)\\]\\(([^\\)]*)\\)";
     public static final String HEADER_REGEX = "(?:\n *|^)#{1,6} ([^\n]+)";
     private static final String TABLE_REGEX =
-            "((?: *\\| *(?:[^|\\n]+) *){1}\\|) *\\n" +
-            "((?: *\\| *-+ *){1}\\|) *\\n" +
-            "((?:(?:(?: *\\| *(?:[^|\\n]+) *){1}\\|) *\\n)*)";
+            "((?: *\\| *(?:[^|\n]+) *){1}\\|) *\n" +
+            "((?: *\\| *-+ *){1}\\|) *\n" +
+            "((?:(?:(?: *\\| *(?:[^|\n]+) *){1}\\|) *\n)*)";
+    public static final String TABLE_REGEX_BASE64 = ".*<TABLE_N>(.*)</TABLE_N>.*";
     public static final int MAX_TABLE_LENGTH = 5;
 
     public static String getTableRegex(int num) {
@@ -40,41 +45,77 @@ public class Constants {
         return new String[]{CODE_SEPARATOR, CODE_SEPARATOR_2};
     }
 
-    public static String[] splitFirstRegex(String string, String regex) {
-        if (string == null || regex == null) return null;
-        String[] tmp = string.split(regex);
-        if (tmp.length > 1) {
-            String[] result = new String[2];
-            result[1] = "";
-            Matcher matcher = Pattern.compile(regex).matcher(string);
-            result[0] = (matcher.find() ? matcher.group(1) : "");
-            for (int i = 1; i < tmp.length; i++) {
-                String t = tmp[i];
-                if (!t.isEmpty()) result[1] = result[1] + t;
-                if (matcher.find()) {
-                    String group = matcher.group();
-                    if (group != null) result[1] = result[1] + group;
-                }
-            }
-            return result;
-        } else return null;
+    public static String compressRawText(String text) {
+        text = compressTables(text);
+        text = compressCodeBlocks(text);
+        return text;
     }
 
-    public static String[] splitRegex(String string, String regex) {
-        if (string == null || regex == null) return null;
-        String[] tmp = string.split(regex);
-        if (tmp.length > 1) {
-            List<String> result = new ArrayList<>();
-            Matcher matcher = Pattern.compile(regex).matcher(string);
-            for (int i = 1; i < tmp.length; i++) {
-                String t = tmp[i];
-                if (matcher.find()) {
-                    String group = matcher.group();
-                    if (group != null) t = group + t;
-                }
-                result.add(t);
+    public static String compressCodeBlocks(String text) {
+        return compress(text, Constants.CODE_REGEX_MULTIPLE_LINES, Constants::formatCodeBlock);
+    }
+
+    public static String decompressCodeBlocks(String text) {
+        return decompress(text, Constants.CODE_REGEX_BASE64, Constants::formatCodeBlock, "CODE");
+    }
+
+    public static String compressTables(String text) {
+        if (text == null) return null;
+        text += "\n";
+        for (int i = 1; i < MAX_TABLE_LENGTH; i++) {
+            int finalI = i;
+            text = compress(text, Constants.TABLE_REGEX.replace("{1}", String.format("{%s}", i)),
+                    s -> formatTableBlock(s, finalI));
+        }
+        if (text.endsWith("\n")) text = text.substring(0, text.length() - 1);
+        return text;
+    }
+
+    public static String decompressTables(String text) {
+        System.out.println(String.format("Decompressing text: \"%s\"", text));
+        for (int i = 1; i < MAX_TABLE_LENGTH; i++) {
+            int finalI = i;
+            text = decompress(text, Constants.TABLE_REGEX_BASE64.replace("_N", "_" + i),
+                    s -> formatTableBlock(s, finalI), "TABLE");
+        }
+        System.out.println(String.format("Decompressed text: \"%s\"", text));
+        return text;
+    }
+
+    private static String compress(String text, String regex, Function<String, String> formatter) {
+        if (text == null) return null;
+        Matcher matcher = Pattern.compile(regex).matcher(text);
+        while (matcher.find()) {
+            String match = matcher.group();
+            text = text.replace(match, formatter.apply(Base64Utils.encode(match)));
+        }
+        return text;
+    }
+
+    private static String decompress(String text, String regex, Function<String, String> formatter, String blockName) {
+        if (text == null) return null;
+        Matcher matcher = Pattern.compile(regex).matcher(text);
+        while (matcher.find()) {
+            String match = matcher.group(1);
+            try {
+                text = text.replace(formatter.apply(match), Base64Utils.decode(match));
+            } catch (Exception e) {
+                text = text.replace(match, match.replace(String.format("<%s>", blockName), String.format("<U%s>", blockName)));
             }
-            return result.toArray(new String[0]);
-        } else return new String[]{string};
+        }
+        return text.replace(String.format("<U%s>", blockName), String.format("<%s>", blockName));
+    }
+
+    public static String formatCodeBlock(String text) {
+        return Constants.CODE_REGEX_BASE64
+                .replace("(.*)", text)
+                .replace(".*", "");
+    }
+
+    public static String formatTableBlock(String text, int n) {
+        return Constants.TABLE_REGEX_BASE64
+                .replace("_N", "_" + n)
+                .replace("(.*)", text)
+                .replace(".*", "");
     }
 }

@@ -22,7 +22,8 @@ public class NodeUtils {
                 Node nextNode = node.getNextNode();
                 if (nextNode != null && (nextNode.getClass().equals(TextNode.class) || nextNode.getClass().equals(TextBlock.class))) {
                     TextNode textNode = ((TextNode) nextNode);
-                    if (!textNode.isEmpty() && textNode.getTextType() == TextType.NORMAL) {
+                    if (!textNode.isEmpty() && textNode.getTextType() == TextType.NORMAL &&
+                            (textNode.getChildNode() instanceof TextNode || textNode.getChildNode() instanceof SimpleTextNode)) {
                         String finalText = simpleTextNode.getText();
                         if (nextNode.getClass().equals(TextBlock.class)) finalText += Constants.TEXT_SEPARATOR;
                         finalText += textNode.serialize();

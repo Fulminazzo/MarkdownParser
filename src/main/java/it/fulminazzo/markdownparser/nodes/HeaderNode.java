@@ -19,6 +19,7 @@ public class HeaderNode extends TextBlock {
     @Override
     public void setText(String text, TextType textType, boolean checkHeader) {
         if (text == null) return;
+        text = Constants.compressRawText(text);
         while (text.startsWith("\n")) text = text.substring(1);
         String[] tmp = text.split("\n");
         String headerText = tmp[0];
@@ -31,6 +32,8 @@ public class HeaderNode extends TextBlock {
             this.headerText = null;
         }
         text = text.substring(headerText.length());
+        tmp = text.split(Constants.HEADER_REGEX.replace("#{1,6}", "#".repeat(headerSize)));
+        /*text = text.substring(headerText.length());
         if (text.endsWith("\n") == false) text += "\n";
         matcher = Pattern.compile(Constants.CODE_REGEX_MULTIPLE_LINES).matcher(text);
         while (matcher.find())
@@ -49,7 +52,7 @@ public class HeaderNode extends TextBlock {
                 tmp[0] = tmp[0].replace(matcher.group(1),
                         new String(Base64.getDecoder().decode(innerMatcher.group(1))));
         }
-        System.out.println(String.format("TMP0: {%s}", tmp[0]));
+        System.out.println(String.format("TMP0: {%s}", tmp[0]));*/
         super.setText(tmp[0], textType, checkHeader);
         if (tmp.length > 1)
             addNode(new HeaderNode(text.substring(text.indexOf(tmp[0]) + tmp[0].length())));

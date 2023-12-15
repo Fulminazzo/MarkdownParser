@@ -25,8 +25,14 @@ public class TableNode extends Node {
         titleRow = null;
         tableRows.clear();
         for (int i = 1; i < Constants.MAX_TABLE_LENGTH; i++) {
-            final String TABLE_REGEX = Constants.getTableRegex(i);
+            String TABLE_REGEX = Constants.TABLE_REGEX_BASE64.replace("_N", "_" + i);
             Matcher matcher = Pattern.compile(TABLE_REGEX).matcher(rawContent);
+            System.out.println();
+            //TODO: Not good enough. need more work on tables.
+            //TODO: Start from scratch?
+            if (matcher.find()) rawContent = Constants.decompressTables(rawContent);
+            TABLE_REGEX = Constants.getTableRegex(i);
+            matcher = Pattern.compile(TABLE_REGEX).matcher(rawContent);
             if (matcher.find()) {
                 rawContent = rawContent.substring(matcher.group().length());
                 titleRow = new TableRow(matcher.group(1));

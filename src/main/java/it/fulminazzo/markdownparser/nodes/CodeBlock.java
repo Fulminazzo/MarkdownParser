@@ -11,7 +11,6 @@ public class CodeBlock extends Node {
     private final String code;
 
     public CodeBlock(String rawText) {
-        System.out.println(String.format("Raw text: \"%s\"", rawText));
         for (String codeSeparator : Constants.getCodeSeparators()) {
             if (rawText.startsWith(codeSeparator)) rawText = rawText.substring(codeSeparator.length());
             if (rawText.endsWith(codeSeparator))
