@@ -1,6 +1,6 @@
-package it.fulminazzo.markdownparser.nodes;
+package it.fulminazzo.markdownparser.nodes_prev;
 
-import it.fulminazzo.markdownparser.utils.NodeUtils;
+import it.fulminazzo.markdownparser.utils.NodeUtils_prev;
 import it.fulminazzo.markdownparser.utils.Constants;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +17,7 @@ public abstract class ContainerNode extends Node {
     }
 
     public ContainerNode(String rawText) {
-        this.childNode = NodeUtils.parseRaw(rawText);
+        this.childNode = NodeUtils_prev.parseRaw(rawText);
     }
 
     public void addChildNode(Node node) {
@@ -36,7 +36,7 @@ public abstract class ContainerNode extends Node {
     }
     
     protected void checkChildNodes() {
-        childNode = NodeUtils.correctNodes(childNode);
+        childNode = NodeUtils_prev.correctNodes(childNode);
     }
 
     @Override

@@ -1,9 +1,7 @@
-package it.fulminazzo.markdownparser.nodes;
+package it.fulminazzo.markdownparser.nodes_prev;
 
 import it.fulminazzo.markdownparser.utils.Constants;
 import lombok.Getter;
-
-import java.util.Arrays;
 
 @Getter
 public class CodeBlock extends Node {

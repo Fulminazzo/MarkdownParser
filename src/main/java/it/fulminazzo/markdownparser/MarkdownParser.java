@@ -1,26 +1,46 @@
 package it.fulminazzo.markdownparser;
 
-import it.fulminazzo.markdownparser.nodes.ContainerNode;
-import it.fulminazzo.markdownparser.nodes.Node;
-import it.fulminazzo.markdownparser.nodes.RootNode;
-import it.fulminazzo.markdownparser.nodes.TableNode;
-import it.fulminazzo.markdownparser.objects.TableRow;
-import it.fulminazzo.markdownparser.utils.Constants;
+import it.fulminazzo.markdownparser.enums.Tag;
+import it.fulminazzo.markdownparser.nodes_prev.Node;
+import it.fulminazzo.markdownparser.nodes_prev.RootNode;
 import it.fulminazzo.markdownparser.utils.NodeUtils;
-import org.w3c.dom.html.HTMLParagraphElement;
 
-import javax.sound.midi.SysexMessage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MarkdownParser {
 
     public static void main(String[] args) throws IOException {
+        if (true) {
+            InputStream file = MarkdownParser.class.getResourceAsStream("/test.md");
+            String content = new String(file.readAllBytes());
+            file.close();;
+
+            it.fulminazzo.markdownparser.nodes.RootNode rootNode = new it.fulminazzo.markdownparser.nodes.RootNode(content);
+            File file1 = new File("test.md");
+            if (!file1.exists()) file1.createNewFile();
+            FileOutputStream fileOutputStream =new FileOutputStream(file1);
+            fileOutputStream.write(rootNode.serialize().getBytes());
+            fileOutputStream.close();
+            /*it.fulminazzo.markdownparser.nodes.Node node = NodeUtils.parseRaw(content);
+            it.fulminazzo.markdownparser.nodes.Node tmp = node;
+            System.out.println("PRINTING NODE");
+            while (node != null) {
+                System.out.println(node);
+                node = node.getNext();
+            }
+            node = tmp;
+            while (node != null) {
+                System.out.println(node.serialize());
+                node = node.getNext();
+            }*/
+            return;
+        }
+
         if (false) {
             String text = "# Hello world\n" +
                     "This is my text\n" +
@@ -35,7 +55,7 @@ public class MarkdownParser {
                     "You should not\n" +
                     "\n" +
                     "## CAN YOU?!";
-            Matcher matcher = Pattern.compile(Constants.HEADER_REGEX).matcher(text);
+            //Matcher matcher = Pattern.compile(Constants.HEADER_REGEX).matcher(text);
             return;
         }
         InputStream file = MarkdownParser.class.getResourceAsStream("/test1.md");

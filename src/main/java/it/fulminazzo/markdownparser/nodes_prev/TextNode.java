@@ -1,29 +1,28 @@
-package it.fulminazzo.markdownparser.nodes;
+package it.fulminazzo.markdownparser.nodes_prev;
 
-import it.fulminazzo.markdownparser.enums.Tag;
 import it.fulminazzo.markdownparser.enums.TextType;
-import it.fulminazzo.markdownparser.objects.ContentMap;
-import it.fulminazzo.markdownparser.utils.NodeUtils;
+import it.fulminazzo.markdownparser.utils.Constants;
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Getter
-public class TextNode extends TagNode {
+public class TextNode extends ContainerNode {
     private TextType textType;
 
-    public TextNode() {
-        this(null);
-    }
-
     public TextNode(String text) {
-        this(text, TextType.NORMAL);
+        setText(text, TextType.NORMAL);
     }
 
     public TextNode(String text, TextType textType) {
-        super(Tag.getTextValues());
         setText(text, textType);
+    }
+
+    public TextNode(String text, TextType textType, boolean checkHeader) {
+        setText(text, textType, checkHeader);
     }
 
     public void setText(String text) {
@@ -31,45 +30,13 @@ public class TextNode extends TagNode {
     }
 
     public void setText(String text, TextType textType) {
-        if (text == null) return;
-        this.textType = textType;
-        setContent(text);
-    }
-
-    @Override
-    protected void setContents(String rawText) {
-        for (Tag tag : Tag.getTextValues()) {
-            Matcher matcher = Pattern.compile(tag.getRegex()).matcher(rawText);
-            if (matcher.find()) {
-                rawText = matcher.group(1);
-                break;
-            }
-        }
-        String text = Tag.parseRawText(rawText);
-        if (Tag.hasValidTag(text)) addChildNode(NodeUtils.formatRawText(text));
-        else addChildNode(new SimpleTextNode(rawText));
+        setText(text, textType, true);
     }
 
     public void setText(String rawText, TextType textType, boolean checkHeader) {
-        if (rawText == null || textType == null) return;
-        this.textType = textType;
-        setContents(rawText);;
-        /*if (textType != TextType.NORMAL)
-            try {
-                Tag tag = Tag.valueOf(textType.name());
-                rawText = tag.unParse(tag.getUntaggedString(rawText));
-                Matcher matcher = Pattern.compile(textType.getRegex()).matcher(rawText);
-                if (matcher.find()) rawText = matcher.group(1);
-            } catch (IllegalArgumentException ignored) {}
-        System.out.println(String.format("Checking if has valid tag: {%s}", rawText));
-        if (Tag.hasValidTag(rawText)) addChildNode(NodeUtils.parseRaw(rawText));
-        else addChildNode(new SimpleTextNode(rawText));*/
-        //Node tmp = NodeUtils.parseRaw(rawText);
-        /*if (tmp.getNext() == null && tmp.getChild() == null) addChildNode(new SimpleTextNode(rawText));
-        else addChildNode(tmp);*/
-        /*if (rawText == null) return;
+        if (rawText == null) return;
         if (textType == null) textType = TextType.NORMAL;
-        rawText = Tag.parseRawText(rawText);
+        rawText = Constants.compressRawText(rawText);
         final String[] lines = rawText.split(Constants.TEXT_SEPARATOR);
         String text = lines[0];
         if (lines.length > 1) text += "\n";
@@ -80,6 +47,34 @@ public class TextNode extends TagNode {
         for (int i = 0; i < chars.length; i++) {
             char c = chars[i];
             textContent += c;
+
+            // TABLES
+            String next = i == chars.length - 1 ? "" : chars[i + 1] + "";
+            String res = parseTable(next, textContent);
+            if (res != null && res.isEmpty()) {
+                addNode(new TableNode(rawText.substring(i + 1)));
+                return;
+            }
+
+            // CODE AND COMMENTS
+            //String res = parseCodeBlock(i == chars.length - 1 ? "" : chars[i + 1] + "", textContent, false);
+            if (res == null) res = parseCodeBlock(next, textContent, false);
+            if (res == null) res = parseComment(textContent, false);
+            if (res != null) {
+                textContent = res;
+                continue;
+            } else if (isStartingComment(textContent)) continue;
+
+            // HEADERS
+            if (checkHeader) {
+                //System.out.println(String.format("Content: \"%s\"", Arrays.toString(textContent.split("\n"))));
+                String[] t = textContent.split("\n");
+                /*if (t.length > 0 && t[t.length - 1].matches(Constants.HEADER_REGEX)) {
+                    addChildNode(new TextNode(String.join("\n", Arrays.copyOfRange(t, 0, t.length - 1))));
+                    addNode(new HeaderNode(rawText));
+                    return;
+                }*/
+            }
 
             String innerContent = TextType.convertString(text.substring(i)
                     .replace("<", "<<")
@@ -109,7 +104,7 @@ public class TextNode extends TagNode {
         }
 
         if (!textContent.isEmpty() && !textContent.equals("\n")) {
-            *//*textContent += Constants.TEXT_SEPARATOR;
+            textContent += Constants.TEXT_SEPARATOR;
             String res = parseTable("", textContent);
             if (res != null && res.isEmpty()) {
                 addNode(new TableNode(rawText.substring(chars.length - textContent.length() + 2)));
@@ -118,16 +113,16 @@ public class TextNode extends TagNode {
             textContent = textContent.substring(0, textContent.length() - Constants.TEXT_SEPARATOR.length());
             if (res == null) res = parseCodeBlock("", textContent, true);
             if (res == null) res = parseComment(textContent, true);
-            if (res == null || !res.isEmpty())*//* addChildNode(new SimpleTextNode(textContent));
+            if (res == null || !res.isEmpty()) addChildNode(new SimpleTextNode(textContent));
         }
 
         if (lines.length > 1) {
             String otherLines = String.join(Constants.TEXT_SEPARATOR, Arrays.copyOfRange(lines, 1, lines.length));
             addNode(new TextBlock(otherLines));
-        }*/
+        }
     }
 
-    /*private String parseTable(String next, String textContent) {
+    private String parseTable(String next, String textContent) {
         for (int i = 1; i < Constants.MAX_TABLE_LENGTH; i++) {
             String TABLE_REGEX = Constants.getTableRegex(i);
             Pattern tablePattern = Pattern.compile(TABLE_REGEX);
@@ -202,18 +197,29 @@ public class TextNode extends TagNode {
 
     private boolean isStartingComment(String textContent) {
         return Arrays.stream(Constants.getCommentsSeparators()).anyMatch(s -> textContent.startsWith(s[0]));
-    }*/
+    }
+
+    public boolean isEmpty() {
+        if (childNode == null) return true;
+        if (childNode instanceof TextNode) return ((TextNode) childNode).isEmpty();
+        if (childNode instanceof SimpleTextNode) return ((SimpleTextNode) childNode).text.isEmpty();
+        return false;
+    }
 
     @Override
-    protected ContentMap getContentMap() {
-        return super.getContentMap().set("text-type", textType.toString());
+    protected LinkedHashMap<String, String> getMapContents() {
+        LinkedHashMap<String, String> map = super.getMapContents();
+        if (textType != null) map.put("text-type", textType.toString());
+        return map;
     }
 
     @Override
     public String serialize() {
-        String serialize = serializeChildren();
-        if (serialize == null) return "";
-        if (textType == null) textType = TextType.NORMAL;
-        return String.format("%s%s%s", textType.getIdChar(), serialize, textType.getIdChar());
+        return String.format("%s%s%s", textType.getIdChar(), super.serialize(), textType.getIdChar());
+    }
+
+    @Override
+    public String getContent() {
+        return null;
     }
 }

@@ -1,26 +1,43 @@
 package it.fulminazzo.markdownparser.nodes;
 
-import it.fulminazzo.markdownparser.utils.Constants;
+import it.fulminazzo.markdownparser.enums.Tag;
+import it.fulminazzo.markdownparser.objects.ContentMap;
 
-public class CommentNode extends SimpleTextNode {
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-    public CommentNode(String text) {
-        super("");
-        if (text == null) return;
-        for (String[] comment : Constants.getCommentsSeparators()) {
-            String cOpening = comment[0];
-            String cClosing = comment[1];
-            if (text.startsWith(cOpening)) {
-                text = text.substring(cOpening.length());
-                if (text.endsWith(cClosing))
-                    text = text.substring(0, text.length() - cClosing.length());
-                setText(text.trim());
+public class CommentNode extends TagNode {
+    private String text;
+
+    public CommentNode() {
+        this(null);
+    }
+
+    public CommentNode(String rawText) {
+        super(rawText, Tag.getCommentValues());
+    }
+
+    @Override
+    protected void setContents(String rawText) {
+        for (Tag tag : tags) {
+            Matcher matcher = Pattern.compile(tag.getRegex()).matcher(rawText);
+            if (matcher.find()) {
+                text = matcher.group(1);
+                return;
             }
         }
     }
 
     @Override
+    protected ContentMap getContentMap() {
+        return super.getContentMap().set("text", text);
+    }
+
+    @Override
     public String serialize() {
-        return "";
+        if (text == null) return "";
+        if (text.contains("\n"))
+            return String.format("\n<!-- %s -->\n", text);
+        return String.format("\n[//]: # (%s)\n", text);
     }
 }

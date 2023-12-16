@@ -1,22 +1,25 @@
 package it.fulminazzo.markdownparser.enums;
 
+import it.fulminazzo.markdownparser.utils.Constants;
 import lombok.Getter;
 
 import java.util.Arrays;
 
 @Getter
 public enum TextType {
-    STRONG("**"),
-    STRONG_2("__"),
-    ITALIC("_"),
-    ITALIC_2("*"),
-    STRIKETHROUGH("~~"),
-    NORMAL("");
+    STRONG("**", Constants.STRONG_REGEX),
+    STRONG2("__", Constants.STRONG_REGEX_2),
+    ITALIC("_", Constants.ITALIC_REGEX),
+    ITALIC2("*", Constants.ITALIC_REGEX_2),
+    STRIKETHROUGH("~~", Constants.STRIKETHROUGH),
+    NORMAL("", null);
 
     private final String idChar;
+    private final String regex;
 
-    TextType(String idChar) {
+    TextType(String idChar, String regex) {
         this.idChar = idChar;
+        this.regex = regex;
     }
 
     public boolean matches(String text) {

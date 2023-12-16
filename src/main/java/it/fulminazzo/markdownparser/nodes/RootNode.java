@@ -1,8 +1,13 @@
 package it.fulminazzo.markdownparser.nodes;
 
-import java.io.*;
+import it.fulminazzo.markdownparser.utils.NodeUtils;
 
-public class RootNode extends ContainerNode {
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+public class RootNode extends Node {
 
     public RootNode(File file) throws IOException {
         this(new FileInputStream(file));
@@ -14,12 +19,11 @@ public class RootNode extends ContainerNode {
     }
 
     public RootNode(String rawText) {
-        super(rawText);
-        checkNodes();
+        child = NodeUtils.formatRawText(rawText);
     }
 
     @Override
-    public String getContent() {
-        return null;
+    public String serialize() {
+        return serializeChildren();
     }
 }

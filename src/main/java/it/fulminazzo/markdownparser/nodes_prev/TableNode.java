@@ -1,39 +1,37 @@
-package it.fulminazzo.markdownparser.nodes;
+package it.fulminazzo.markdownparser.nodes_prev;
 
-import it.fulminazzo.markdownparser.enums.Tag;
-import it.fulminazzo.markdownparser.objects.ContentMap;
 import it.fulminazzo.markdownparser.objects.TableRow;
 import it.fulminazzo.markdownparser.utils.Constants;
 
-import javax.swing.plaf.SplitPaneUI;
-import java.security.PublicKey;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class TableNode extends TagNode {
-    private List<TableRow> tableRows;
+public class TableNode extends Node {
+    private final List<TableRow> tableRows;
     private TableRow titleRow;
 
-    public TableNode() {
-        this(null);
-    }
-
     public TableNode(String rawContent) {
-        super(rawContent, Tag.getTableValues());
+        this.tableRows = new ArrayList<>();
+        setContent(rawContent);
     }
 
-    @Override
-    public void setContents(String rawContent) {
+    public void setContent(String rawContent) {
         if (rawContent == null) return;
         titleRow = null;
-        if (tableRows == null) tableRows = new ArrayList<>();
         tableRows.clear();
         for (int i = 1; i < Constants.MAX_TABLE_LENGTH; i++) {
-            String TABLE_REGEX = Constants.getTableRegex(i);
+            String TABLE_REGEX = Constants.TABLE_REGEX_BASE64.replace("_N", "_" + i);
             Matcher matcher = Pattern.compile(TABLE_REGEX).matcher(rawContent);
+            if (matcher.find()) rawContent = Constants.decompressTables(rawContent);
+            TABLE_REGEX = Constants.getTableRegex(i);
+            matcher = Pattern.compile(TABLE_REGEX).matcher(rawContent);
             if (matcher.find()) {
+                rawContent = rawContent.substring(matcher.group().length());
                 titleRow = new TableRow(matcher.group(1));
                 tableRows.addAll(Arrays.stream(matcher.group(3).split("\n"))
                         .map(TableRow::new)
@@ -41,7 +39,7 @@ public class TableNode extends TagNode {
                 break;
             }
         }
-        getContentMap();
+        addNode(new TextBlock(rawContent));
     }
 
     public List<String> getRowContents(int row) {
@@ -116,21 +114,6 @@ public class TableNode extends TagNode {
     }
 
     @Override
-    protected ContentMap getContentMap() {
-        ContentMap map =  super.getContentMap().set("title", titleRow.toString());
-        String output = "[\n";
-        for (int i = 0; i < tableRows.size(); i++) {
-            output += Constants.SEPARATOR;
-            output += tableRows.get(i).toString().replace("\n", "\n" + Constants.SEPARATOR);
-            if (i < tableRows.size() - 1) output += ",";
-            output += "\n";
-        }
-        output += "]";
-        if (!output.equals("[\n\n]")) map.put("contents", output);
-        return map;
-    }
-
-    @Override
     public String serialize() {
         String output = "\n";
         if (titleRow != null) {
@@ -140,5 +123,23 @@ public class TableNode extends TagNode {
         for (TableRow tableRow : tableRows)
             output += formatRow(tableRow) + "\n";
         return output;
+    }
+
+    @Override
+    public String getContent() {
+        String output = "{\n";
+        if (titleRow != null) {
+            output += Constants.SEPARATOR + "title: {\n" + Constants.SEPARATOR;
+            output += titleRow.toString().replace("\n", "\n" + Constants.SEPARATOR.repeat(2));
+            output += "\n" + Constants.SEPARATOR + "},\n";
+        }
+        output += Constants.SEPARATOR + "contents: {\n";
+        for (int i = 0; i < tableRows.size(); i++) {
+            output += Constants.SEPARATOR.repeat(2);
+            output += tableRows.get(i).toString().replace("\n", "\n" + Constants.SEPARATOR.repeat(2));
+            if (i < tableRows.size() - 1) output += ",";
+            output += "\n";
+        }
+        return output + Constants.SEPARATOR + "}\n}";
     }
 }
