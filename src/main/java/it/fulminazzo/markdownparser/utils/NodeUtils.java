@@ -5,7 +5,6 @@ import it.fulminazzo.markdownparser.nodes.Node;
 import it.fulminazzo.markdownparser.nodes.TextBlock;
 import it.fulminazzo.markdownparser.nodes.TextNode;
 
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,18 +18,18 @@ public class NodeUtils {
         Node mainNode = null;
         for (String text : raw) {
             Node node = null;
-            Tag[] tags = Tag.values();
-            for (int i = 0; i < tags.length; i++) {
-                Tag tag = tags[i];
-                Matcher matcher = Pattern.compile(Constants.getTagsRegex(tag)).matcher(text);
-                if (matcher.find()) {
-                    String match = matcher.group();
-                    text = text.substring(match.length());
-                    String prev = matcher.group(1);
-                    if (!prev.replace("\n", "").isEmpty()) node = createNode(node, formatRawText(prev));
-                    String content = matcher.group(2);
+            Matcher matcher = Pattern.compile(Constants.TAGS_FINDER_REGEX).matcher(text);
+            while (matcher.find()) {
+                Tag tag = null;
+                try {tag = Tag.valueOf(matcher.group(2));}
+                catch (IllegalArgumentException ignored) {}
+                String match = matcher.group();
+                text = text.substring(match.length());
+                String prev = tag == null ? match : matcher.group(1);
+                if (!prev.replace("\n", "").isEmpty()) node = createNode(node, formatRawText(prev));
+                if (tag != null) {
+                    String content = matcher.group(3);
                     if (!content.isEmpty()) node = createNode(node, tag.create(content));
-                    i = 0;
                 }
             }
             if (!text.isEmpty()) node = createNode(node, new TextNode(text));

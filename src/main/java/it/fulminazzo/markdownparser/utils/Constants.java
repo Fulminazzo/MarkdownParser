@@ -25,7 +25,7 @@ public class Constants {
     public static final String CODE_SEPARATOR_2 = "`";
     public static final String CODE_REGEX_SINGLE = "([^`]|^)`((?:[^`\n])+)`(?:[^`]|$)";
     public static final String CODE_REGEX_MULTIPLE = "([^`]|^)```((?:[^`\n])+)```(?:[^`]|$)";
-    public static final String CODE_REGEX_MULTIPLE_LINES = "^```(.+|)\n([\\s\\S]*?)``` *$";
+    public static final String CODE_REGEX_MULTIPLE_LINES = "^ *```(.*)\n([\\s\\S]*?)``` *$";
     // TEXT
     public static final String STRONG_REGEX = "(?:[^*]|^)\\*\\*([^*](?:(?!\\*\\*)(?!\n\n)[\\S\\s])*)\\*\\*(?:[^*]|$)";
     public static final String STRONG_REGEX_2 = "(?:[^_]|^)__([^_](?:(?!__)(?!\n\n)[\\S\\s])*)__(?:[^_]|$)";
@@ -36,8 +36,10 @@ public class Constants {
     private static final String HEADER_REGEX = "(?:^|\\n)(#{1}) ([^\n]*)\n((?:(?!\n\\s*#{1,1} )[\\s\\S])*)";
     // TAGS
     private static final String TAGS_REGEX = "((?:(?!<\\/(?:TAG)>)[\\s\\S])*)<(?:TAG)>((?:(?!<\\/(?:TAG)>)[^\n])+)<\\/(?:TAG)>";
+    public static final String TAGS_FINDER_REGEX = "((?:(?!<\\/(?:[0-9A-Za-z]+)>)[\\s\\S])*)<([0-9A-Za-z]+)>((?:(?!<\\/(?:[0-9A-Za-z]+)>)[^\n])+)<\\/(?:[0-9A-Za-z]+)>";
 
     //TODO:
+    public static final String LIST_REGEX = "((?:( *)- (?:(?:(?!\n- )(?!\n *\n)[\\S\\s])*)(?:\n|$))+)";
     public static final String LINK_REGEX = "\\[([^\\]]*)\\]\\(([^\\)]*)\\)";
 
     public static int getMaxTableLength() {

@@ -5,7 +5,6 @@ import it.fulminazzo.markdownparser.objects.ContentMap;
 import it.fulminazzo.markdownparser.utils.Constants;
 import lombok.Getter;
 
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,15 +32,14 @@ public class CodeNode extends TagNode {
             Matcher matcher = Pattern.compile(tag.getRegex()).matcher(rawText);
             if (matcher.find()) {
                 rawText = matcher.group(2);
-                if (tag.equals(Tag.CODE)) rawText = matcher.group(1) + "\n" + rawText;
+                if (tag.equals(Tag.CODE2)) rawText = matcher.group(1) + "\n" + rawText;
                 break;
             }
         }
         String[] tmp = rawText.split("[ \n]");
         String language = tmp.length == 0 ? "" : tmp[0];
         if (rawText.contains("\n") && language.matches("^[a-zA-Z]*$") && tmp.length > 1) {
-            this.language = language;
-            this.code = rawText.substring(language.length());
+            setContent(language, rawText.substring(language.length()));
         } else {
             this.language = null;
             this.code = rawText;
@@ -49,6 +47,8 @@ public class CodeNode extends TagNode {
     }
 
     public void setContent(String language, String code) {
+        if (language != null && language.replace("\n", "").trim().isEmpty())
+            language = null;
         this.language = language;
         this.code = code;
     }

@@ -6,11 +6,11 @@ public class Base64Utils {
 
     public static String encode(String text) {
         if (text == null) return null;
-        else return Base64.getUrlEncoder().encodeToString(text.getBytes());
+        return Base64.getUrlEncoder().encodeToString(text.getBytes());
     }
 
     public static String decode(String text) {
         if (text == null) return null;
-        else return new String(Base64.getUrlDecoder().decode(text));
+        return new String(Base64.getUrlDecoder().decode(text));
     }
 }

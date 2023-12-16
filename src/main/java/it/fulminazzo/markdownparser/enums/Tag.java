@@ -32,8 +32,8 @@ public enum Tag {
     TABLE9(Constants.getTableRegex(9), TableNode::new),
     TABLE10(Constants.getTableRegex(10), TableNode::new),
     // CODE
-    CODE(Constants.CODE_REGEX_MULTIPLE_LINES, Pattern.MULTILINE, CodeNode::new),
-    CODE2(Constants.CODE_REGEX_MULTIPLE, CodeNode::new),
+    CODE(Constants.CODE_REGEX_MULTIPLE, CodeNode::new),
+    CODE2(Constants.CODE_REGEX_MULTIPLE_LINES, Pattern.MULTILINE, CodeNode::new),
     CODE3(Constants.CODE_REGEX_SINGLE, CodeNode::new),
     // TEXT
     STRONG(Constants.STRONG_REGEX, s -> new TextNode(s, TextType.STRONG)),
@@ -111,8 +111,8 @@ public enum Tag {
                     match = textType.getIdChar() + group2 + textType.getIdChar();
                 } catch (IllegalArgumentException ignored) {
                     switch (tag) {
-                        case CODE: group2 = matcher.group(1) + "\n" + group2;
-                        case CODE2: {
+                        case CODE2: group2 = matcher.group(1) + "\n" + group2;
+                        case CODE: {
                             match = Constants.CODE_SEPARATOR + group2 + Constants.CODE_SEPARATOR;
                             break;
                         }

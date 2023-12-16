@@ -5,8 +5,6 @@ import it.fulminazzo.markdownparser.objects.ContentMap;
 import it.fulminazzo.markdownparser.objects.TableRow;
 import it.fulminazzo.markdownparser.utils.Constants;
 
-import javax.swing.plaf.SplitPaneUI;
-import java.security.PublicKey;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
