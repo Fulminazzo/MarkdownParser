@@ -2,6 +2,7 @@ package it.fulminazzo.markdownparser.nodes;
 
 import it.fulminazzo.markdownparser.enums.Tag;
 import it.fulminazzo.markdownparser.objects.ContentMap;
+import it.fulminazzo.markdownparser.utils.Constants;
 
 public class QuoteNode extends TagNode {
     private String content;
@@ -21,7 +22,7 @@ public class QuoteNode extends TagNode {
 
     @Override
     public String serialize() {
-        String serialize = content.replace("\n", "\n> ");
+        String serialize = content.replace("\n", String.format("\n%s ", Constants.QUOTE_SINGLE));
         if (!serialize.endsWith("\n")) serialize += "\n";
         return serialize + "\n";
     }

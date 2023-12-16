@@ -113,11 +113,11 @@ public enum Tag {
                     switch (tag) {
                         case CODE: group2 = matcher.group(1) + "\n" + group2;
                         case CODE2: {
-                            match = String.format("```%s```", group2);
+                            match = Constants.CODE_SEPARATOR + group2 + Constants.CODE_SEPARATOR;
                             break;
                         }
                         case CODE3: {
-                            match = String.format("`%s`", group2);
+                            match = Constants.CODE_SEPARATOR_2 + group2 + Constants.CODE_SEPARATOR_2;
                         }
                     }
                 }

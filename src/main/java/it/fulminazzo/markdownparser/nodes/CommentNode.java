@@ -2,6 +2,7 @@ package it.fulminazzo.markdownparser.nodes;
 
 import it.fulminazzo.markdownparser.enums.Tag;
 import it.fulminazzo.markdownparser.objects.ContentMap;
+import it.fulminazzo.markdownparser.utils.Constants;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,8 +37,7 @@ public class CommentNode extends TagNode {
     @Override
     public String serialize() {
         if (text == null) return "";
-        if (text.contains("\n"))
-            return String.format("\n<!-- %s -->\n", text);
-        return String.format("\n[//]: # (%s)\n", text);
+        String serialize = (text.contains("\n") ? Constants.COMMENT_MULTIPLE : Constants.COMMENT_SINGLE);
+        return String.format("\n" + serialize + "\n", text);
     }
 }

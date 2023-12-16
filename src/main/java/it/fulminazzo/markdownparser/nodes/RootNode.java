@@ -24,6 +24,10 @@ public class RootNode extends Node {
 
     @Override
     public String serialize() {
-        return serializeChildren();
+        String serialize = serializeChildren();
+        if (serialize == null) return "";
+        serialize = serialize.trim();
+        while (serialize.startsWith("\n")) serialize = serialize.substring(1);
+        return serialize;
     }
 }

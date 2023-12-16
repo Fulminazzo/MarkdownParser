@@ -30,7 +30,7 @@ public class TableNode extends TagNode {
         titleRow = null;
         if (tableRows == null) tableRows = new ArrayList<>();
         tableRows.clear();
-        for (int i = 1; i < Constants.MAX_TABLE_LENGTH; i++) {
+        for (int i = 1; i <= Constants.getMaxTableLength(); i++) {
             String TABLE_REGEX = Constants.getTableRegex(i);
             Matcher matcher = Pattern.compile(TABLE_REGEX).matcher(rawContent);
             if (matcher.find()) {
