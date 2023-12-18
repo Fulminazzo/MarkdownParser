@@ -2,10 +2,12 @@ package it.fulminazzo.markdownparser.nodes;
 
 import it.fulminazzo.markdownparser.enums.Tag;
 import it.fulminazzo.markdownparser.objects.ContentMap;
+import lombok.Getter;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Getter
 public class HeaderNode extends Node {
     protected int header;
     protected String headerText;

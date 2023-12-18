@@ -1,12 +1,7 @@
-- list1
-- list2
- - Not one 
-- list3
-Is my list
-  - Need two spaces
-- list4
-    - or four
-- list5
-     - or five
-- list5
-      - not six!
+
+| **Table of Contents**                     |
+|-------------------------------------------|
+| [ConfigManager](#configmanager)           |
+| [MultiConfigManager](#multiconfigmanager) |
+| [LangConfigManager](#langconfigmanager)   |
+| [IBearConfig](#ibearconfig)               |

@@ -1,5 +1,6 @@
 package it.fulminazzo.markdownparser;
 
+import it.fulminazzo.markdownparser.nodes.HeaderNode;
 import it.fulminazzo.markdownparser.nodes.Node;
 
 import java.io.File;
@@ -33,17 +34,6 @@ public class MarkdownParser {
     }
 
     public static void main(String[] args) throws IOException {
-        if (false) {
-            InputStream file = MarkdownParser.class.getResourceAsStream("/test3.md");
-            String content = new String(file.readAllBytes());
-            file.close();
-
-            Node rootNode = new it.fulminazzo.markdownparser.nodes.RootNode(content);
-            //rootNode = rootNode.getChild().getLastNode();
-            System.out.println(rootNode);
-            System.out.println(rootNode.serialize());
-            return;
-        }
         int tries = 1;
         Date start = new Date();
         for (int i = 0; i < tries; i++) {
@@ -53,16 +43,15 @@ public class MarkdownParser {
             file.close();
 
             it.fulminazzo.markdownparser.nodes.RootNode rootNode = new it.fulminazzo.markdownparser.nodes.RootNode(content);
+            System.out.println(String.format("Writing to file, time: %ss", ((double) new Date().getTime() - date.getTime()) / 1000));
             File file1 = new File("test.md");
             if (!file1.exists()) file1.createNewFile();
             FileOutputStream fileOutputStream =new FileOutputStream(file1);
             fileOutputStream.write(rootNode.serialize().getBytes());
             fileOutputStream.close();
-            Date finalDate = new Date();
-            System.out.println(String.format("Test [%s] time: %ss", i + 1, ((double) finalDate.getTime() - date.getTime()) / 1000));
+            System.out.println(String.format("Test [%s] time: %ss", i + 1, ((double) new Date().getTime() - date.getTime()) / 1000));
         }
-        Date finalDate = new Date();
-        System.out.println(String.format("Overall time: %ss", ((double) finalDate.getTime() - start.getTime()) / 1000));
+        System.out.println(String.format("Overall time: %ss", ((double) new Date().getTime() - start.getTime()) / 1000));
     }
 
 }

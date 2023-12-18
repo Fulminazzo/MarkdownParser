@@ -1,10 +1,12 @@
 package it.fulminazzo.markdownparser.nodes;
 
 import it.fulminazzo.markdownparser.objects.ContentMap;
+import it.fulminazzo.markdownparser.objects.NodesList;
 import it.fulminazzo.markdownparser.utils.Constants;
 import it.fulminazzo.markdownparser.utils.NodeUtils;
 import lombok.Getter;
 
+import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
@@ -40,6 +42,15 @@ public abstract class Node {
         prev.removeNode(node);
     }
 
+    public Node getNode(Class<? extends Node> nodeClass) {
+        Node node = next;
+        while (node != null) {
+            if (node.getClass().equals(nodeClass)) return node;
+            node = node.getNext();
+        }
+        return null;
+    }
+
     public void addChildNode(String rawText) {
         if (rawText == null) return;
         addChildNode(NodeUtils.formatRawText(rawText));
@@ -73,6 +84,27 @@ public abstract class Node {
         }
     }
 
+    public Node getChildNode(Class<? extends Node> nodeClass) {
+        Node node = child;
+        while (node != null) {
+            if (node.getClass().equals(nodeClass)) return node;
+            node = node.getNext();
+        }
+        return null;
+    }
+
+    public NodesList getChildren() {
+        return new NodesList(child);
+    }
+
+    public NodesList findNodes(Class<? extends Node> nodeClass) {
+        NodesList nodesList = new NodesList();
+        if (this.getClass().equals(nodeClass)) nodesList.add(this);
+        if (child != null) nodesList.addAll(child.findNodes(nodeClass));
+        if (next != null) nodesList.addAll(next.findNodes(nodeClass));
+        return nodesList;
+    }
+
     public Node getFirstNode() {
         if (prev == null) return this;
         else return prev.getFirstNode();
@@ -102,11 +134,33 @@ public abstract class Node {
         return serialize;
     }
 
-    public abstract String serialize();
-
     public boolean isEmpty() {
         return child == null || child.isEmpty();
     }
+
+    public void write(String file) throws IOException {
+        write(new File(file));
+    }
+
+    public void write(File file) throws IOException {
+        if (file == null) return;
+        if (!file.exists()) {
+            File parentFile = file.getParentFile();
+            if (parentFile != null && !parentFile.mkdirs()) return;
+            if (!file.createNewFile()) return;
+        }
+        write(new FileOutputStream(file));
+    }
+
+    public void write(OutputStream outputStream) throws IOException {
+        if (outputStream == null) return;
+        String serialize = this.serialize();
+        if (serialize == null) return;
+        outputStream.write(serialize.getBytes());
+        outputStream.close();
+    }
+
+    public abstract String serialize();
 
     @Override
     public String toString() {

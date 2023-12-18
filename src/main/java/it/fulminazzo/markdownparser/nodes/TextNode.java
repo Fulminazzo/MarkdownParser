@@ -52,7 +52,7 @@ public class TextNode extends TagNode {
 
     @Override
     protected ContentMap getContentMap() {
-        return super.getContentMap().set("text-type", textType.toString());
+        return super.getContentMap().set("text-type", textType == null ? null : textType.toString());
     }
 
     @Override
@@ -60,6 +60,8 @@ public class TextNode extends TagNode {
         String serialize = serializeChildren();
         if (serialize == null) return "";
         if (textType == null) textType = TextType.NORMAL;
-        return String.format("%s%s%s", textType.getIdChar(), serialize, textType.getIdChar());
+        serialize = String.format("%s%s%s", textType.getIdChar(), serialize, textType.getIdChar());
+        if (next instanceof ListNode) serialize += "\n";
+        return serialize;
     }
 }

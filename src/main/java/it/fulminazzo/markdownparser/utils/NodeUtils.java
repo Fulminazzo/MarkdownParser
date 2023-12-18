@@ -13,7 +13,7 @@ public class NodeUtils {
     public static Node formatRawText(String rawText) {
         if (rawText == null) return null;
         rawText = Tag.parseRawText(rawText);
-        String[] raw = rawText.split(Constants.TEXT_SEPARATOR);
+        String[] raw = rawText.split("\n\\s*\n");
 
         Node mainNode = null;
         for (String text : raw) {
@@ -39,6 +39,14 @@ public class NodeUtils {
         }
         if (raw.length == 1) mainNode = mainNode.getChild();
         return mainNode;
+    }
+
+    public static int getLongestSpace(String string) {
+        if (string == null) return -1;
+        Matcher matcher = Pattern.compile("( +)").matcher(string);
+        int prev = 0;
+        while (matcher.find()) prev = Math.max(prev, matcher.group(1).length());
+        return prev;
     }
 
     private static Node createNode(Node node, Node newNode) {

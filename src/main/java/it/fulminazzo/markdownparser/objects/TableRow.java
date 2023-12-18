@@ -1,7 +1,8 @@
 package it.fulminazzo.markdownparser.objects;
 
-import it.fulminazzo.markdownparser.nodes.TextNode;
+import it.fulminazzo.markdownparser.nodes.Node;
 import it.fulminazzo.markdownparser.utils.Constants;
+import it.fulminazzo.markdownparser.utils.NodeUtils;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Getter
 public class TableRow {
-    private final List<TextNode> contents;
+    private final List<Node> contents;
 
     public TableRow(String rawContents) {
         this.contents = new ArrayList<>();
@@ -26,12 +27,12 @@ public class TableRow {
         rawContents = rawContents.substring(1);
         this.contents.addAll(Arrays.stream(rawContents.split("\\|"))
                 .map(String::trim)
-                .map(TextNode::new)
+                .map(NodeUtils::formatRawText)
                 .collect(Collectors.toList()));
     }
 
     public List<String> getStringContents() {
-        return contents.stream().map(TextNode::serialize).collect(Collectors.toList());
+        return contents.stream().map(Node::serialize).collect(Collectors.toList());
     }
 
     public String getColumnContent(int column) {
@@ -47,7 +48,8 @@ public class TableRow {
         String serialize = "| ";
         serialize += contents == null ? "" : String.join(" | ", getStringContents());
         if (serialize.equals("| ")) serialize += "|";
-        return serialize.replace("\n", " ");
+        serialize = serialize.replace("\n", " ");
+        return serialize;
     }
 
     @Override

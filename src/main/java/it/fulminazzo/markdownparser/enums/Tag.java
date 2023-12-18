@@ -35,6 +35,10 @@ public enum Tag {
     CODE(Constants.CODE_REGEX_MULTIPLE, CodeNode::new),
     CODE2(Constants.CODE_REGEX_MULTIPLE_LINES, Pattern.MULTILINE, CodeNode::new),
     CODE3(Constants.CODE_REGEX_SINGLE, CodeNode::new),
+    // LIST
+    LIST(Constants.LIST_REGEX, Pattern.MULTILINE, ListNode::new),
+    // LINK
+    LINK(Constants.LINK_REGEX, LinkNode::new),
     // TEXT
     STRONG(Constants.STRONG_REGEX, s -> new TextNode(s, TextType.STRONG)),
     STRONG2(Constants.STRONG_REGEX_2, s -> new TextNode(s, TextType.STRONG2)),

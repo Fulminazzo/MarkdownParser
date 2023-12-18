@@ -19,13 +19,17 @@ public class Constants {
     private static final String TABLE_REGEX =
             "((?: *\\| *(?:[^|\n]+) *){1}\\|) *\n" +
                     "((?: *\\| *-+ *){1}\\|) *\n" +
-                    "((?:(?:(?: *\\| *(?:[^|\n]+) *){1}\\|) *\n)*)";
+                    "((?:(?:(?: *\\| *(?:[^|\n]+) *){1}\\|) *(?:\n|$))*)";
     // CODE
     public static final String CODE_SEPARATOR = "```";
     public static final String CODE_SEPARATOR_2 = "`";
     public static final String CODE_REGEX_SINGLE = "([^`]|^)`((?:[^`\n])+)`(?:[^`]|$)";
     public static final String CODE_REGEX_MULTIPLE = "([^`]|^)```((?:[^`\n])+)```(?:[^`]|$)";
     public static final String CODE_REGEX_MULTIPLE_LINES = "^ *```(.*)\n([\\s\\S]*?)``` *$";
+    // LIST
+    public static final String LIST_REGEX = "((?:(?:^|\n)(?: ?)- (?:(?:(?!\n- )(?!\\s*\n)[\\S\\s])*)(?:\n|$))+)";
+    // LINK
+    public static final String LINK_REGEX = "\\[([^\\]]+)\\]\\(([^)\n ]+)(?: \"([^\"]+)\")?\\)";
     // TEXT
     public static final String STRONG_REGEX = "(?:[^*]|^)\\*\\*([^*](?:(?!\\*\\*)(?!\n\n)[\\S\\s])*)\\*\\*(?:[^*]|$)";
     public static final String STRONG_REGEX_2 = "(?:[^_]|^)__([^_](?:(?!__)(?!\n\n)[\\S\\s])*)__(?:[^_]|$)";
@@ -37,10 +41,6 @@ public class Constants {
     // TAGS
     private static final String TAGS_REGEX = "((?:(?!<\\/(?:TAG)>)[\\s\\S])*)<(?:TAG)>((?:(?!<\\/(?:TAG)>)[^\n])+)<\\/(?:TAG)>";
     public static final String TAGS_FINDER_REGEX = "((?:(?!<\\/(?:[0-9A-Za-z]+)>)[\\s\\S])*)<([0-9A-Za-z]+)>((?:(?!<\\/(?:[0-9A-Za-z]+)>)[^\n])+)<\\/(?:[0-9A-Za-z]+)>";
-
-    //TODO:
-    public static final String LIST_REGEX = "((?:( *)- (?:(?:(?!\n- )(?!\n *\n)[\\S\\s])*)(?:\n|$))+)";
-    public static final String LINK_REGEX = "\\[([^\\]]*)\\]\\(([^\\)]*)\\)";
 
     public static int getMaxTableLength() {
         return Arrays.stream(Tag.getTableValues())

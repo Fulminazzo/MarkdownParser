@@ -99,17 +99,18 @@ public class TableNode extends TagNode {
             output += String.format("%s | ", content);
         }
         if (output.equals("| ")) output += "|";
+        while (output.endsWith(" ")) output = output.substring(0, output.length() - 1);
         return output;
     }
 
     protected String formatRow(String content) {
-        String output = "| ";
+        String output = "|";
         Integer[] longestColumns = getLongestColumns();
         for (Integer longestColumn : longestColumns) {
-            content += content.repeat(longestColumn - content.length());
-            output += String.format("%s | ", content);
+            content += content.repeat(longestColumn - content.length() + 2);
+            output += String.format("%s|", content);
         }
-        if (output.equals("| ")) output += "|";
+        if (output.equals("|")) output += "|";
         return output;
     }
 
@@ -137,6 +138,6 @@ public class TableNode extends TagNode {
         }
         for (TableRow tableRow : tableRows)
             output += formatRow(tableRow) + "\n";
-        return output;
+        return output + "\n";
     }
 }

@@ -56,11 +56,11 @@ public class CodeNode extends TagNode {
     @Override
     public String serialize() {
         if (code == null) return "";
-        String codeSeparator = code.contains("\n") ? "\n" + Constants.CODE_SEPARATOR : Constants.CODE_SEPARATOR_2;
+        String codeSeparator = code.contains("\n") || language != null ? Constants.CODE_SEPARATOR : Constants.CODE_SEPARATOR_2;
         String serialize = codeSeparator;
-        serialize += language == null ? "" : (language + " ");
+        serialize += language == null ? "" : (language);
         serialize += code;
-        if (code.contains("\n") && serialize.endsWith("\n")) serialize = serialize.substring(0, serialize.length() - "\n".length());
+        if (code.contains("\n") && serialize.endsWith("\n\n")) serialize = serialize.substring(0, serialize.length() - "\n".length());
         serialize += codeSeparator;
         if (code.contains("\n")) serialize += "\n";
         return serialize;
