@@ -10,6 +10,10 @@ import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
+/**
+ * An abstract Node.
+ * This is the base class for every node.
+ */
 @Getter
 public abstract class Node {
     protected Node prev;
@@ -17,11 +21,21 @@ public abstract class Node {
     protected Node parent;
     protected Node child;
 
-    public void addNode(String rawText) {
-        if (rawText == null) return;
-        addNode(NodeUtils.formatRawText(rawText));
+    /**
+     * Add node from the given raw content.
+     *
+     * @param rawContent the raw content
+     */
+    public void addNode(String rawContent) {
+        if (rawContent == null) return;
+        addNode(NodeUtils.formatRawText(rawContent));
     }
 
+    /**
+     * Add node.
+     *
+     * @param node the node
+     */
     public void addNode(Node node) {
         if (node == null) return;
         Node last = getLastNode();
@@ -31,6 +45,11 @@ public abstract class Node {
         node.prev = last;
     }
 
+    /**
+     * Remove node.
+     *
+     * @param node the node
+     */
     public void removeNode(Node node) {
         if (node == null) return;
         if (next == null) return;
@@ -42,6 +61,12 @@ public abstract class Node {
         prev.removeNode(node);
     }
 
+    /**
+     * Gets node from the corresponding class.
+     *
+     * @param nodeClass the node class
+     * @return the node
+     */
     public Node getNode(Class<? extends Node> nodeClass) {
         Node node = next;
         while (node != null) {
@@ -51,11 +76,21 @@ public abstract class Node {
         return null;
     }
 
-    public void addChildNode(String rawText) {
-        if (rawText == null) return;
-        addChildNode(NodeUtils.formatRawText(rawText));
+    /**
+     * Add child node from the given raw content.
+     *
+     * @param rawContent the raw content
+     */
+    public void addChildNode(String rawContent) {
+        if (rawContent == null) return;
+        addChildNode(NodeUtils.formatRawText(rawContent));
     }
 
+    /**
+     * Add child node.
+     *
+     * @param node the node
+     */
     public void addChildNode(Node node) {
         if (node == null) return;
         if (node.parent != null) node.parent.removeChildNode(node);
@@ -64,6 +99,11 @@ public abstract class Node {
         else child.addNode(node);
     }
 
+    /**
+     * Remove child node.
+     *
+     * @param node the node
+     */
     public void removeChildNode(Node node) {
         if (node == null) return;
         if (child == null) return;
@@ -84,6 +124,12 @@ public abstract class Node {
         }
     }
 
+    /**
+     * Gets child node from the corresponding class.
+     *
+     * @param nodeClass the node class
+     * @return the child node
+     */
     public Node getChildNode(Class<? extends Node> nodeClass) {
         Node node = child;
         while (node != null) {
@@ -93,10 +139,21 @@ public abstract class Node {
         return null;
     }
 
+    /**
+     * Gets children.
+     *
+     * @return the children
+     */
     public NodesList getChildren() {
         return new NodesList(child);
     }
 
+    /**
+     * Find a list of nodes with the specified class type.
+     *
+     * @param nodeClass the node class
+     * @return the nodes list
+     */
     public NodesList findNodes(Class<? extends Node> nodeClass) {
         NodesList nodesList = new NodesList();
         if (this.getClass().equals(nodeClass)) nodesList.add(this);
@@ -105,20 +162,41 @@ public abstract class Node {
         return nodesList;
     }
 
+    /**
+     * Gets first node.
+     *
+     * @return the first node
+     */
     public Node getFirstNode() {
         if (prev == null) return this;
         else return prev.getFirstNode();
     }
 
+    /**
+     * Gets last node.
+     *
+     * @return the last node
+     */
     public Node getLastNode() {
         if (next == null) return this;
         else return next.getLastNode();
     }
 
+    /**
+     * Gets the content map.
+     * See {@link ContentMap} for more.
+     *
+     * @return the content map
+     */
     protected ContentMap getContentMap() {
         return new ContentMap();
     }
 
+    /**
+     * Serialize all children into a string.
+     *
+     * @return the string
+     */
     protected String serializeChildren() {
         if (child == null) return null;
         String serialize = "";
@@ -134,14 +212,31 @@ public abstract class Node {
         return serialize;
     }
 
+    /**
+     * Checks if a node is empty or not.
+     *
+     * @return the boolean
+     */
     public boolean isEmpty() {
         return child == null || child.isEmpty();
     }
 
+    /**
+     * Calls {@link Node#serialize()} to write to the given file name.
+     *
+     * @param file the file
+     * @throws IOException the io exception
+     */
     public void write(String file) throws IOException {
         write(new File(file));
     }
 
+    /**
+     * Calls {@link Node#serialize()} to write to the given file.
+     *
+     * @param file the file
+     * @throws IOException the io exception
+     */
     public void write(File file) throws IOException {
         if (file == null) return;
         if (!file.exists()) {
@@ -152,6 +247,12 @@ public abstract class Node {
         write(new FileOutputStream(file));
     }
 
+    /**
+     * Calls {@link Node#serialize()} to write to the given output stream.
+     *
+     * @param outputStream the output stream
+     * @throws IOException the io exception
+     */
     public void write(OutputStream outputStream) throws IOException {
         if (outputStream == null) return;
         String serialize = this.serialize();
@@ -160,6 +261,18 @@ public abstract class Node {
         outputStream.close();
     }
 
+    /**
+     * Sets content from the given raw string.
+     *
+     * @param rawContent the raw content
+     */
+    public abstract void setContent(String rawContent);
+
+    /**
+     * Converts the current node to the corresponding Markdown format.
+     *
+     * @return the string
+     */
     public abstract String serialize();
 
     @Override

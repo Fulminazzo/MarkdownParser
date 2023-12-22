@@ -5,12 +5,24 @@ import it.fulminazzo.markdownparser.nodes.Node;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+/**
+ * An implementation of {@link ArrayList}
+ * that contains nodes.
+ */
 public class NodesList extends ArrayList<Node> {
 
+    /**
+     * Instantiates a new Nodes list.
+     */
     public NodesList() {
 
     }
 
+    /**
+     * Instantiates a new Nodes list.
+     *
+     * @param node the node
+     */
     public NodesList(Node node) {
         if (node == null) return;
         while (node != null) {

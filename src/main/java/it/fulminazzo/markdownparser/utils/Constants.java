@@ -4,6 +4,9 @@ import it.fulminazzo.markdownparser.enums.Tag;
 
 import java.util.Arrays;
 
+/**
+ * A group of constants used throughout the project.
+ */
 public class Constants {
     public static final String SEPARATOR = "    ";
     public static final String TEXT_SEPARATOR = "\n\n";
@@ -39,9 +42,13 @@ public class Constants {
     // HEADER
     private static final String HEADER_REGEX = "(?:^|\\n)(#{1}) ([^\n]*)\n((?:(?!\n\\s*#{1,1} )[\\s\\S])*)";
     // TAGS
-    private static final String TAGS_REGEX = "((?:(?!<\\/(?:TAG)>)[\\s\\S])*)<(?:TAG)>((?:(?!<\\/(?:TAG)>)[^\n])+)<\\/(?:TAG)>";
     public static final String TAGS_FINDER_REGEX = "((?:(?!<\\/(?:[0-9A-Za-z]+)>)[\\s\\S])*)<([0-9A-Za-z]+)>((?:(?!<\\/(?:[0-9A-Za-z]+)>)[^\n])+)<\\/(?:[0-9A-Za-z]+)>";
 
+    /**
+     * Gets the max supported columns for tables.
+     *
+     * @return the max table columns
+     */
     public static int getMaxTableLength() {
         return Arrays.stream(Tag.getTableValues())
                 .map(Enum::name)
@@ -50,14 +57,22 @@ public class Constants {
                 .max().orElse(0);
     }
 
-    public static String getTagsRegex(Tag tag) {
-        return TAGS_REGEX.replace("(?:TAG)", tag.getTagName());
-    }
-
+    /**
+     * Gets header regex.
+     *
+     * @param num the size of the header
+     * @return the header regex
+     */
     public static String getHeaderRegex(int num) {
         return HEADER_REGEX.replace("1}", num + "}");
     }
 
+    /**
+     * Gets table regex.
+     *
+     * @param num the size of the table
+     * @return the table regex
+     */
     public static String getTableRegex(int num) {
         return TABLE_REGEX.replace("{1}", "{" + num + "}");
     }

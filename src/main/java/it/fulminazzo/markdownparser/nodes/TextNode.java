@@ -5,31 +5,64 @@ import it.fulminazzo.markdownparser.enums.TextType;
 import it.fulminazzo.markdownparser.objects.ContentMap;
 import it.fulminazzo.markdownparser.utils.NodeUtils;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A Node that represents a formatted string.
+ * A string is formatted if it presents one of the
+ * characters specified in {@link TextType}, or if
+ * it is empty.
+ */
 @Getter
+@Setter
 public class TextNode extends TagNode {
     private TextType textType;
 
+    /**
+     * Instantiates a new Text node.
+     */
     public TextNode() {
         this(null);
     }
 
+    /**
+     * Instantiates a new Text node.
+     *
+     * @param text the text
+     */
     public TextNode(String text) {
         this(text, TextType.NORMAL);
     }
 
+    /**
+     * Instantiates a new Text node.
+     *
+     * @param text     the text
+     * @param textType the text type
+     */
     public TextNode(String text, TextType textType) {
         super(Tag.getTextValues());
         setText(text, textType);
     }
 
+    /**
+     * Sets text.
+     *
+     * @param text the text
+     */
     public void setText(String text) {
         setText(text, TextType.NORMAL);
     }
 
+    /**
+     * Sets text.
+     *
+     * @param text     the text
+     * @param textType the text type
+     */
     public void setText(String text, TextType textType) {
         if (text == null) return;
         this.textType = textType;
@@ -37,17 +70,17 @@ public class TextNode extends TagNode {
     }
 
     @Override
-    protected void setContents(String rawText) {
+    protected void setContents(String rawContent) {
         for (Tag tag : Tag.getTextValues()) {
-            Matcher matcher = Pattern.compile(tag.getRegex()).matcher(rawText);
+            Matcher matcher = Pattern.compile(tag.getRegex()).matcher(rawContent);
             if (matcher.find()) {
-                rawText = matcher.group(1);
+                rawContent = matcher.group(1);
                 break;
             }
         }
-        String text = Tag.parseRawText(rawText);
+        String text = Tag.parseRawText(rawContent);
         if (Tag.hasValidTag(text)) addChildNode(NodeUtils.formatRawText(text));
-        else addChildNode(new SimpleTextNode(rawText));
+        else addChildNode(new SimpleTextNode(rawContent));
     }
 
     @Override

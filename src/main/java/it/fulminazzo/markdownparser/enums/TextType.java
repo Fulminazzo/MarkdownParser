@@ -5,6 +5,10 @@ import lombok.Getter;
 
 import java.util.Arrays;
 
+/**
+ * An enum containing every text
+ * format allowed by Markdown.
+ */
 @Getter
 public enum TextType {
     STRONG("**", Constants.STRONG_REGEX),
@@ -22,19 +26,42 @@ public enum TextType {
         this.regex = regex;
     }
 
+    /**
+     * Check if the given text matches the text type format.
+     *
+     * @param text the text
+     * @return the boolean
+     */
     public boolean matches(String text) {
         if (text == null) return false;
         text = text.trim();
         return text.startsWith(idChar) && text.endsWith(idChar);
     }
 
-    public String parseText(String text) {
+    /**
+     * Gets the content inside the text type format.
+     *
+     * @param text the text
+     * @return the content
+     */
+    public String getContent(String text) {
         if (!matches(text)) return text;
         text = text.trim();
         if (text.length() < idChar.length() * 2) return text;
         text = text.substring(idChar.length());
         text = text.substring(0, text.length() - idChar.length());
         return text;
+    }
+
+    /**
+     * Returns the text type corresponding to the idChar.
+     *
+     * @param idChar the id char
+     * @return the text type
+     */
+    public static TextType fromChar(String idChar) {
+        if (idChar == null) return null;
+        return Arrays.stream(TextType.values()).filter(c -> c.idChar.equalsIgnoreCase(idChar)).findFirst().orElse(null);
     }
 
     public boolean equals(TextType textType) {
@@ -47,26 +74,5 @@ public enum TextType {
         String name = name();
         if (name.contains("_")) name = name.substring(0, name.indexOf("_"));
         return name;
-    }
-
-    public static TextType fromChar(String idChar) {
-        if (idChar == null) return null;
-        return Arrays.stream(TextType.values()).filter(c -> c.idChar.equalsIgnoreCase(idChar)).findFirst().orElse(null);
-    }
-
-    public static String convertString(String string) {
-        if (string == null) return null;
-        for (TextType textType : values())
-            if (!textType.equals(NORMAL))
-                string = string.replace(textType.getIdChar(), String.format("<%s>", textType.name()));
-        return string;
-    }
-
-    public static String unConvertString(String string) {
-        if (string == null) return null;
-        for (TextType textType : values())
-            if (!textType.equals(NORMAL))
-                string = string.replace(String.format("<%s>", textType.name()), textType.getIdChar());
-        return string;
     }
 }

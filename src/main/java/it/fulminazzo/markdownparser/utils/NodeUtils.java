@@ -1,6 +1,7 @@
 package it.fulminazzo.markdownparser.utils;
 
 import it.fulminazzo.markdownparser.enums.Tag;
+import it.fulminazzo.markdownparser.nodes.HeaderNode;
 import it.fulminazzo.markdownparser.nodes.Node;
 import it.fulminazzo.markdownparser.nodes.TextBlock;
 import it.fulminazzo.markdownparser.nodes.TextNode;
@@ -8,8 +9,17 @@ import it.fulminazzo.markdownparser.nodes.TextNode;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A series of functions for nodes.
+ */
 public class NodeUtils {
 
+    /**
+     * Formats a raw text and converts it into a node.
+     *
+     * @param rawText the raw text
+     * @return the node
+     */
     public static Node formatRawText(String rawText) {
         if (rawText == null) return null;
         rawText = Tag.parseRawText(rawText);
@@ -28,25 +38,21 @@ public class NodeUtils {
                 String prev = tag == null ? match : matcher.group(1);
                 if (!prev.replace("\n", "").isEmpty()) node = createNode(node, formatRawText(prev));
                 if (tag != null) {
-                    String content = matcher.group(3);
-                    if (!content.isEmpty()) node = createNode(node, tag.create(content));
+                    String content = match.substring(prev.length());
+                    if (!content.isEmpty()) node = createNode(node, tag.create(content, false));
                 }
             }
             if (!text.isEmpty()) node = createNode(node, new TextNode(text));
-            TextBlock textBlock = new TextBlock();
-            textBlock.addChildNode(node);
+            Node textBlock;
+            if (node instanceof HeaderNode) textBlock = node;
+            else {
+                textBlock = new TextBlock();
+                textBlock.addChildNode(node);
+            }
             mainNode = createNode(mainNode, textBlock);
         }
         if (raw.length == 1) mainNode = mainNode.getChild();
         return mainNode;
-    }
-
-    public static int getLongestSpace(String string) {
-        if (string == null) return -1;
-        Matcher matcher = Pattern.compile("( +)").matcher(string);
-        int prev = 0;
-        while (matcher.find()) prev = Math.max(prev, matcher.group(1).length());
-        return prev;
     }
 
     private static Node createNode(Node node, Node newNode) {

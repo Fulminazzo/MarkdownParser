@@ -3,20 +3,36 @@ package it.fulminazzo.markdownparser.nodes;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * A Node that represents a simple text.
+ */
 @Getter
 @Setter
 public class SimpleTextNode extends Node {
     protected String text;
 
+    /**
+     * Instantiates a new Simple text node.
+     */
     public SimpleTextNode() {
         this(null);
     }
 
+    /**
+     * Instantiates a new Simple text node.
+     *
+     * @param text the text
+     */
     public SimpleTextNode(String text) {
-        setText(text);
+        setContent(text);
     }
 
-    public void setText(String text) {
+    /**
+     * Sets content.
+     *
+     * @param text the text
+     */
+    public void setContent(String text) {
         if (text == null) return;
         this.text = text;
     }

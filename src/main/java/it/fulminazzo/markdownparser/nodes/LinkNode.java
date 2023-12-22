@@ -6,25 +6,36 @@ import it.fulminazzo.markdownparser.objects.ContentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A Node that represents a link.
+ */
 public class LinkNode extends TagNode {
     private String text;
     private String link;
     private String hoverText;
 
+    /**
+     * Instantiates a new Link node.
+     */
     public LinkNode() {
         this(null);
     }
 
-    public LinkNode(String rawText) {
-        super(rawText, Tag.LINK);
+    /**
+     * Instantiates a new Link node.
+     *
+     * @param rawContent the raw content
+     */
+    public LinkNode(String rawContent) {
+        super(rawContent, Tag.LINK);
     }
 
     @Override
-    protected void setContents(String rawText) {
+    protected void setContents(String rawContent) {
         text = null;
         link = null;
         hoverText = null;
-        Matcher matcher = Pattern.compile(Tag.LINK.getRegex()).matcher(rawText);
+        Matcher matcher = Pattern.compile(Tag.LINK.getRegex()).matcher(rawContent);
         if (matcher.matches()) {
             text = matcher.group(1);
             link = matcher.group(2);

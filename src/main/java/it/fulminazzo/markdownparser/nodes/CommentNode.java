@@ -7,21 +7,32 @@ import it.fulminazzo.markdownparser.utils.Constants;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A Node that represents a comment block.
+ */
 public class CommentNode extends TagNode {
     private String text;
 
+    /**
+     * Instantiates a new Comment node.
+     */
     public CommentNode() {
         this(null);
     }
 
-    public CommentNode(String rawText) {
-        super(rawText, Tag.getCommentValues());
+    /**
+     * Instantiates a new Comment node.
+     *
+     * @param rawContent the raw content
+     */
+    public CommentNode(String rawContent) {
+        super(rawContent, Tag.getCommentValues());
     }
 
     @Override
-    protected void setContents(String rawText) {
+    protected void setContents(String rawContent) {
         for (Tag tag : tags) {
-            Matcher matcher = Pattern.compile(tag.getRegex()).matcher(rawText);
+            Matcher matcher = Pattern.compile(tag.getRegex()).matcher(rawContent);
             if (matcher.find()) {
                 text = matcher.group(1);
                 return;

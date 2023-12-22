@@ -13,6 +13,11 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * An enum that represents any tag supported by the program.
+ * Each tag uses regular expressions to convert any valid string
+ * in a <TAG>(Base64)</TAG> format.
+ */
 @Getter
 public enum Tag {
     // COMMENTS
@@ -70,10 +75,21 @@ public enum Tag {
         this.tagName = name();
     }
 
+    /**
+     * Gets tags regex.
+     *
+     * @return the tags regex
+     */
     public String getTagsRegex() {
         return ".*<" + tagName + ">(.*)</" + tagName + ">.*";
     }
 
+    /**
+     * Remove the tags from a string and decodes it from Base64.
+     *
+     * @param rawText the raw text
+     * @return the string
+     */
     public String unParse(String rawText) {
         if (rawText == null) return null;
         Matcher matcher = Pattern.compile(rawText).matcher(getTagsRegex());
@@ -81,24 +97,39 @@ public enum Tag {
         return Base64Utils.decode(rawText);
     }
 
+    /**
+     * Gets a string wrapped in &#60;TAG>&#60;/TAG>
+     *
+     * @param string the string
+     * @return the tagged string
+     */
     public String getTaggedString(String string) {
         if (string == null) return null;
         return getTagsRegex().replace("(.*)", string).replace(".*", "");
     }
 
-    public String getUntaggedString(String string) {
-        if (string == null) return null;
-        Matcher matcher = Pattern.compile(getTagsRegex()).matcher(string);
-        if (matcher.find()) return matcher.group(1);
-        else return string;
-    }
-
-    public Node create(String rawText) {
+    /**
+     * Create a node from the given text.
+     * If check is true, checks that the string
+     * matches a valid tag.
+     *
+     * @param rawText the raw text
+     * @param check   the check
+     * @return the node
+     */
+    public Node create(String rawText, boolean check) {
         if (rawText == null || creator == null) return null;
-        if (!Pattern.compile(getTagsRegex()).matcher(rawText).find()) rawText = getTaggedString(rawText);
+        if (check && !Pattern.compile(getTagsRegex()).matcher(rawText).find()) rawText = getTaggedString(rawText);
         return creator.apply(rawText);
     }
 
+    /**
+     * Converts a string into the &#60;TAG>(Base64)&#60;/TAG> format
+     * for every tag.
+     *
+     * @param text the text
+     * @return the string
+     */
     public static String parseRawText(String text) {
         if (text == null) return null;
         for (Tag tag : Tag.values()) {
@@ -132,31 +163,66 @@ public enum Tag {
         return text;
     }
 
+    /**
+     * Check if the text has a valid tag.
+     *
+     * @param text the text
+     * @return the boolean
+     */
     public static boolean hasValidTag(String text) {
         if (text == null) return false;
-        for (Tag tag : Tag.values()) {
-            Matcher matcher = Pattern.compile(tag.getTagsRegex()).matcher(text);
-            if (matcher.find()) return true;
-        }
+        Matcher matcher = Pattern.compile(Constants.TAGS_FINDER_REGEX).matcher(text);
+        if (matcher.find())
+            try {
+                Tag.valueOf(matcher.group(2));
+                return true;
+            } catch (IllegalArgumentException e) {
+                return false;
+            }
         return false;
     }
 
+    /**
+     * Get comment tags.
+     *
+     * @return the tags
+     */
     public static Tag[] getCommentValues() {
         return getValues(t -> t.name().startsWith("COMMENT"));
     }
 
+    /**
+     * Get quote tags.
+     *
+     * @return the tags
+     */
     public static Tag[] getQuoteValues() {
         return getValues(t -> t.name().startsWith("QUOTE"));
     }
 
+    /**
+     * Get table tags.
+     *
+     * @return the tags
+     */
     public static Tag[] getTableValues() {
         return getValues(t -> t.name().startsWith("TABLE"));
     }
 
+    /**
+     * Get code tags.
+     *
+     * @return the tags
+     */
     public static Tag[] getCodeValues() {
         return getValues(t -> t.name().startsWith("CODE"));
     }
 
+    /**
+     * Get text tags.
+     *
+     * @return the tags
+     */
     public static Tag[] getTextValues() {
         List<Tag> tags = new ArrayList<>(Arrays.asList(values()));
         for (Tag t : getCommentValues()) tags.remove(t);
@@ -167,10 +233,21 @@ public enum Tag {
         return tags.toArray(new Tag[0]);
     }
 
+    /**
+     * Get header tags.
+     *
+     * @return the tags
+     */
     public static Tag[] getHeaderValues() {
         return getValues(t -> t.name().startsWith("HEADER"));
     }
 
+    /**
+     * Get tags using the specified filter.
+     *
+     * @param filter the filter
+     * @return the tags
+     */
     private static Tag[] getValues(Predicate<Tag> filter) {
         return Arrays.stream(values()).filter(filter).toArray(Tag[]::new);
     }

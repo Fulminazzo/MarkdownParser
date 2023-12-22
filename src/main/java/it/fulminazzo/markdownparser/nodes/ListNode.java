@@ -5,23 +5,34 @@ import it.fulminazzo.markdownparser.enums.Tag;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A Node that represents a list block.
+ */
 public class ListNode extends TagNode {
     private String prev;
 
+    /**
+     * Instantiates a new List node.
+     */
     public ListNode() {
         this(null);
     }
 
-    public ListNode(String rawText) {
-        super(rawText, Tag.LIST);
+    /**
+     * Instantiates a new List node.
+     *
+     * @param rawContent the raw content
+     */
+    public ListNode(String rawContent) {
+        super(rawContent, Tag.LIST);
     }
 
     @Override
-    protected void setContents(String rawText) {
-        Matcher matcher = Pattern.compile(Tag.LIST.getRegex()).matcher(rawText);
+    protected void setContents(String rawContent) {
+        Matcher matcher = Pattern.compile(Tag.LIST.getRegex()).matcher(rawContent);
         if (!matcher.find()) return;
         prev = matcher.groupCount() > 1 ? matcher.group(2) : "";
-        String[] subNodes = rawText.split("(^|\n) ?-");
+        String[] subNodes = rawContent.split("(^|\n) ?-");
         for (String node : subNodes) {
             if (node.isEmpty()) continue;
             node = node.replaceAll("\n {0,4}-", "\n-");

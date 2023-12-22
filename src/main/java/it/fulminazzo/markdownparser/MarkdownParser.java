@@ -43,7 +43,7 @@ public class MarkdownParser {
             file.close();
 
             it.fulminazzo.markdownparser.nodes.RootNode rootNode = new it.fulminazzo.markdownparser.nodes.RootNode(content);
-            System.out.println(String.format("Writing to file, time: %ss", ((double) new Date().getTime() - date.getTime()) / 1000));
+            System.out.println(String.format("Writing to file, time: %ss", parseTime(date)));
             File file1 = new File("test.md");
             if (!file1.exists()) file1.createNewFile();
             FileOutputStream fileOutputStream =new FileOutputStream(file1);
@@ -51,7 +51,10 @@ public class MarkdownParser {
             fileOutputStream.close();
             System.out.println(String.format("Test [%s] time: %ss", i + 1, ((double) new Date().getTime() - date.getTime()) / 1000));
         }
-        System.out.println(String.format("Overall time: %ss", ((double) new Date().getTime() - start.getTime()) / 1000));
+        System.out.println(String.format("Overall time: %ss", parseTime(start)));
     }
 
+    public static double parseTime(Date date) {
+        return ((double) new Date().getTime() - date.getTime()) / 1000;
+    }
 }

@@ -4,20 +4,36 @@ import it.fulminazzo.markdownparser.enums.Tag;
 import it.fulminazzo.markdownparser.objects.ContentMap;
 import it.fulminazzo.markdownparser.objects.TableRow;
 import it.fulminazzo.markdownparser.utils.Constants;
+import lombok.Getter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * A Node that represents a Table block.
+ */
+@Getter
 public class TableNode extends TagNode {
     private List<TableRow> tableRows;
     private TableRow titleRow;
 
+    /**
+     * Instantiates a new Table node.
+     */
     public TableNode() {
         this(null);
     }
 
+    /**
+     * Instantiates a new Table node.
+     *
+     * @param rawContent the raw content
+     */
     public TableNode(String rawContent) {
         super(rawContent, Tag.getTableValues());
     }
@@ -42,6 +58,12 @@ public class TableNode extends TagNode {
         getContentMap();
     }
 
+    /**
+     * Gets the corresponding row content.
+     *
+     * @param row the row number
+     * @return the row contents
+     */
     public List<String> getRowContents(int row) {
         if (row < 0 || row > getRowSize()) throw new ArrayIndexOutOfBoundsException(getRowSize());
         if (titleRow != null)
@@ -50,10 +72,21 @@ public class TableNode extends TagNode {
         return tableRows.get(row).getStringContents();
     }
 
+    /**
+     * Gets row size.
+     *
+     * @return the row size
+     */
     public int getRowSize() {
         return tableRows.size() + (titleRow == null ? 0 : 1);
     }
 
+    /**
+     * Gets the corresponding column content.
+     *
+     * @param column the column number
+     * @return the column contents
+     */
     public List<String> getColumnContents(int column) {
         if (column < 0 || column > getColumnSize()) throw new ArrayIndexOutOfBoundsException(getColumnSize());
         List<String> list = new ArrayList<>();
@@ -62,6 +95,11 @@ public class TableNode extends TagNode {
         return list;
     }
 
+    /**
+     * Gets column size.
+     *
+     * @return the column size
+     */
     public int getColumnSize() {
         return titleRow != null ? titleRow.getColumnSize() : tableRows.stream()
                 .filter(Objects::nonNull)
@@ -69,6 +107,12 @@ public class TableNode extends TagNode {
                 .findFirst().orElse(0);
     }
 
+    /**
+     * Gets the longest content in the corresponding column.
+     *
+     * @param column the column number
+     * @return the longest content
+     */
     protected String getLongestColumnContent(int column) {
         String longest = "";
         for (String s : getColumnContents(column))
@@ -76,6 +120,11 @@ public class TableNode extends TagNode {
         return longest;
     }
 
+    /**
+     * Get the longest contents for every column.
+     *
+     * @return an array with the size of each content
+     */
     protected Integer[] getLongestColumns() {
         List<Integer> list = new ArrayList<>();
         for (int i = 0; i < getColumnSize(); i++)
@@ -83,6 +132,11 @@ public class TableNode extends TagNode {
         return list.toArray(new Integer[0]);
     }
 
+    /**
+     * Gets the row contents.
+     *
+     * @return the row contents
+     */
     public List<TableRow> getContents() {
         List<TableRow> contents = new ArrayList<>();
         if (titleRow != null) contents.add(titleRow);
@@ -90,6 +144,12 @@ public class TableNode extends TagNode {
         return contents;
     }
 
+    /**
+     * Format a table row to a string.
+     *
+     * @param tableRow the table row
+     * @return the string
+     */
     protected String formatRow(TableRow tableRow) {
         String output = "| ";
         Integer[] longestColumns = getLongestColumns();
@@ -103,6 +163,12 @@ public class TableNode extends TagNode {
         return output;
     }
 
+    /**
+     * Format content as if it were a row to a string.
+     *
+     * @param content the content
+     * @return the string
+     */
     protected String formatRow(String content) {
         String output = "|";
         Integer[] longestColumns = getLongestColumns();
