@@ -20,7 +20,7 @@ public class ListElement extends Node {
     public ListElement(String rawContent) {
         setContent(rawContent);
     }
-//TODO: More lists
+
     /**
      * Sets content from a raw text.
      *

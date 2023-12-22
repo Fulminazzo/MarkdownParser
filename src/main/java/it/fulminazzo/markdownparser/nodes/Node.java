@@ -149,6 +149,19 @@ public abstract class Node {
     }
 
     /**
+     * Remove a node recursively, across all children and siblings.
+     *
+     * @param node the node
+     */
+    public void removeRecursive(Node node) {
+        if (node == null) return;
+        removeNode(node);
+        removeChildNode(node);
+        if (next != null) next.removeRecursive(node);
+        if (child != null) child.removeRecursive(node);
+    }
+
+    /**
      * Find a list of nodes with the specified class type.
      *
      * @param nodeClass the node class

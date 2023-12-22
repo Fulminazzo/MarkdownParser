@@ -3,64 +3,162 @@ package it.fulminazzo.markdownparser;
 import it.fulminazzo.markdownparser.nodes.HeaderNode;
 import it.fulminazzo.markdownparser.nodes.Node;
 import it.fulminazzo.markdownparser.nodes.RootNode;
-import it.fulminazzo.markdownparser.nodes.TextNode;
-import it.fulminazzo.markdownparser.utils.NodeUtils;
+import it.fulminazzo.markdownparser.objects.NodesList;
+import it.fulminazzo.markdownparser.utils.ProgramUtils;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.concurrent.Callable;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class MarkdownParser {
+    /*
+        /markdownparser read <file>
+        /markdownparser copy <file1> <file2>
+        /markdownparser optimize <file> # copy file1 file2
+        /markdownparser separate <file> # separate file headers in different files
+     */
+    private static final List<Command> commands = Arrays.asList(
+            new Command("read", a -> read(a[0], System.out::println), "file"),
+            new Command("copy", a -> copy(a[0], a[1]), "file1", "file2"),
+            new Command("optimize", a -> {
+                File file = new File(a[0]);
+                RootNode node = read(a[0]);
+                if (node == null) return;
+                System.out.printf("Optimizing %s...%n", file.getName());
+                ProgramUtils.executeTimed(() -> {
+                    node.write(file);
+                    return null;
+                }, "Optimized " + file.getName() + ". Time: %time%s");
+            }, "file"),
+            new Command("separate", a -> {
+                String fileName = a[0];
+                String originalFileName = fileName;
+                String extension = "";
+                int indexOfDot = originalFileName.indexOf(".");
+                if (indexOfDot != -1) {
+                    extension = originalFileName.substring(indexOfDot);
+                    originalFileName = originalFileName.substring(0, indexOfDot);
+                }
+                originalFileName = originalFileName + "-original" + extension;
+                RootNode node = copy(fileName, originalFileName);
+                if (node == null) return;
 
-    public static String getTime() {
-        return new SimpleDateFormat("HH-mm-ss.SSS").format(new Date());
+                File parent = new File(fileName).getParentFile();
+
+                NodesList headerNodes = node.findNodes(HeaderNode.class);
+                if (headerNodes == null || headerNodes.isEmpty()) {
+                    write(node, originalFileName);
+                    return;
+                }
+                int maxHeader = headerNodes.stream()
+                        .map(n -> ((HeaderNode) n).getHeader())
+                        .min(Comparator.comparing(n -> n))
+                        .orElse(-1);
+                if (maxHeader == -1) {
+                    write(node, originalFileName);
+                    return;
+                }
+                List<HeaderNode> nodes = headerNodes.stream()
+                        .map(n -> (HeaderNode) n)
+                        .filter(n -> n.getHeader() == maxHeader)
+                        .collect(Collectors.toList());
+                for (HeaderNode headerNode : nodes) {
+                    write(headerNode, new File(parent, headerNode.getHeaderText() + ".md").getPath());
+                    node.removeRecursive(headerNode);
+                }
+                write(node, fileName);
+            }, "file")
+    );
+
+    public static void main(String[] args) {
+        //TODO: - `fu.yml` in Test.md
+        if (true) {
+            return;
+        }
+
+
+        if (args.length == 0) {
+            System.err.println("You did not specify enough arguments!");
+            System.err.println("Available commands:");
+            commands.forEach(System.err::println);
+            return;
+        }
+        Command command = commands.stream().filter(c -> c.equals(args[0])).findFirst().orElse(null);
+        if (command == null) {
+            System.err.printf("Command %s not found!%n", args[0]);
+            return;
+        }
+        if (args.length - 1 < command.getArguments().length) {
+            System.err.println("You did not specify enough arguments!");
+            System.err.println(command);
+            return;
+        }
+        command.execute(Arrays.copyOfRange(args, 1, args.length));
     }
 
-    public static <T> T executeTask(String first, String second, Callable<T> runnable, long minTime) {
-        Date date = new Date();
-        String firstMessage = String.format("[%s] %s", getTime(), first);
-        T t = null;
+    public static String getFileName() {
         try {
-            t = runnable.call();
-        } catch (Exception e) {
+            return new File(MarkdownParser.class
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI()).getName();
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
-        if (new Date().getTime() - date.getTime() < minTime) return t;
-        String secondMessage = String.format("[%s] %s", getTime(), second);
-        System.out.println(firstMessage);
-        System.out.println(secondMessage);
-        return t;
     }
 
-    public static void main(String[] args) throws IOException {
-        RootNode r = new RootNode(MarkdownParser.class.getResourceAsStream("/test2.md"));
-        System.out.println(r);
-        //if (true) return;
-        int tries = 1;
-        Date start = new Date();
-        for (int i = 0; i < tries; i++) {
-            Date date = new Date();
-            InputStream file = MarkdownParser.class.getResourceAsStream("/test.md");
-            String content = NodeUtils.readFromInputStream(file);
-            file.close();
+    private static RootNode read(String fileName) {
+        return read(fileName, null);
+    }
 
-            it.fulminazzo.markdownparser.nodes.RootNode rootNode = new it.fulminazzo.markdownparser.nodes.RootNode(content);
-            System.out.println(String.format("Writing to file, time: %ss", parseTime(date)));
-            File file1 = new File("test.md");
-            if (!file1.exists()) file1.createNewFile();
-            FileOutputStream fileOutputStream =new FileOutputStream(file1);
-            fileOutputStream.write(rootNode.serialize().getBytes());
-            fileOutputStream.close();
-            System.out.println(String.format("Test [%s] time: %ss", i + 1, ((double) new Date().getTime() - date.getTime()) / 1000));
+    private static RootNode read(String fileName, Consumer<RootNode> function) {
+        File file = new File(fileName);
+        if (!file.exists()) {
+            System.err.printf("File %s not found!%n", fileName);
+            return null;
         }
-        System.out.println(String.format("Overall time: %ss", parseTime(start)));
+        fileName = file.getName();
+        System.out.printf("Reading %s from disk...%n", fileName);
+        return ProgramUtils.executeTimed(() -> {
+            RootNode rootNode = new RootNode(file);
+            if (function != null) function.accept(rootNode);
+            return rootNode;
+        }, "Read " + fileName + " from disk. Time: %time%s");
     }
 
-    public static double parseTime(Date date) {
-        return ((double) new Date().getTime() - date.getTime()) / 1000;
+    private static RootNode copy(String fileName1, String fileName2) {
+        File file1 = new File(fileName1);
+        RootNode node = read(fileName1);
+        if (node == null) return null;
+        File file2 = new File(fileName2);
+        if (file2.exists()) {
+            System.err.printf("File %s already exists!%n", file2.getName());
+            return null;
+        }
+        write(node, file2.getPath(), String.format("Copying %s to %s...", file1.getName(), file2.getName()),
+                "Copied " + file1.getName() + " to " + file2.getName() + ". Time: %time%s");
+        return node;
+    }
+
+    private static void write(Node node, String fileName) {
+        write(node, fileName, null, null);
+    }
+
+    private static void write(Node node, String fileName, String startText, String finalText) {
+        File file = new File(fileName);
+        if (startText == null)
+            startText = String.format("Writing to %s...", file.getName());
+        if (finalText == null)
+            finalText = "Written to " + file.getName() + ". Time: %time%s";
+        System.out.println(startText);
+        ProgramUtils.executeTimed(() -> {
+            node.write(fileName);
+            return null;
+        }, finalText);
     }
 }
