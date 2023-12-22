@@ -30,7 +30,7 @@ public class Constants {
     public static final String CODE_REGEX_MULTIPLE = "([^`]|^)```((?:[^`\n])+)```(?:[^`]|$)";
     public static final String CODE_REGEX_MULTIPLE_LINES = "^ *```(.*)\n([\\s\\S]*?)``` *$";
     // LIST
-    public static final String LIST_REGEX = "((?:(?:^|\n)(?: ?)- (?:(?:(?!\n- )(?!\\s*\n)[\\S\\s])*)(?:\n|$))+)";
+    public static final String LIST_REGEX = "((?:^|\n) ?- (?:(?:[\\S\\s](?!\n ?-)(?!\\s*\n))+[^\n])+)";
     // LINK
     public static final String LINK_REGEX = "\\[([^\\]]+)\\]\\(([^)\n ]+)(?: \"([^\"]+)\")?\\)";
     // TEXT

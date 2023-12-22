@@ -1,6 +1,28 @@
 # MarkdownParser
 As the name implies, this project is a **Java Markdown parser**.
-It provides an [Object Oriented API](#nodes) which allows to **work** with and **manipulate Markdown elements**.
+It provides an [Object Oriented API](#nodes) which allows to **work** with and **manipulate Markdown elements**,
+as well as a simple command interface to test and work with files.
+
+Here are the main commands:
+- `read <file>`: reads and parses the specified file, showing the output in terminal;
+- `copy <file1> <file2>`: reads and parses file `file1` and writes the output to `file2`;
+- `optimize <file>`: optimizes the specified file by reading, parsing and removing unnecessary spaces, new lines or quotes;
+- `separate <file>`: searches for **headers** in the specified file after parsing it.
+  If any is found, the lower ones will be saved in different files, and the main file is overwritten.
+  Say you have `main.md` file containing:
+  ```markdown
+  Are you ready to learn the power of MarkdownParser?
+  
+  # Sure
+  I am excited!
+  
+  # No
+  I still need more time...
+  ```
+  Then, three files will be created:
+  - `Sure.md`, with contents `I am excited!`;
+  - `No.md`, with contents `I still need more time...`;
+  - `main.md`, will be overwritten with contents `Are you ready to learn the power of MarkdownParser?`.
 
 ## How does it work
 **MarkdownParser** takes as input a **string** (or **raw data**, check out [RootNode](#rootnode) for more)

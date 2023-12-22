@@ -6,7 +6,7 @@ import it.fulminazzo.markdownparser.nodes.RootNode;
 import it.fulminazzo.markdownparser.objects.NodesList;
 import it.fulminazzo.markdownparser.utils.ProgramUtils;
 
-import java.io.File;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -75,12 +75,6 @@ public class MarkdownParser {
     );
 
     public static void main(String[] args) {
-        //TODO: - `fu.yml` in Test.md
-        if (true) {
-            return;
-        }
-
-
         if (args.length == 0) {
             System.err.println("You did not specify enough arguments!");
             System.err.println("Available commands:");

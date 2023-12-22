@@ -50,12 +50,13 @@ public class ListNode extends TagNode {
                 if (childNode instanceof ListNode) {
                     serialize += "";
                     serialize += String.format("  %s", childNode.serialize()
-                            .replace("\n-", "\n  -")
-                    );
+                            .replace("\n-", "\n  -"));
                     if (serialize.endsWith("\n  ")) serialize = serialize.substring(0, serialize.length() - 2);
                     if (!serialize.endsWith("\n")) serialize += "\n";
                 } else {
-                    serialize += String.format("%s", childNode.serialize().replace("\n\n", "\n"));
+                    String output = childNode.serialize().replace("\n\n", "\n");
+                    while (serialize.endsWith("\n") && output.startsWith("\n")) output = output.substring(1);
+                    serialize += String.format("%s", output);
                 }
                 childNode = childNode.getNext();
             }
