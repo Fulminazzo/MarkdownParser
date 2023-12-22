@@ -53,7 +53,8 @@ public class NodeUtils {
             }
             mainNode = createNode(mainNode, textBlock);
         }
-        if (raw.length == 1) mainNode = mainNode.getChild();
+        if (raw.length == 1 && mainNode instanceof TextBlock && mainNode.getNext() == null)
+            mainNode = mainNode.getChild();
         return mainNode;
     }
 

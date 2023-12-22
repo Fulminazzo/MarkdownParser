@@ -2,6 +2,8 @@ package it.fulminazzo.markdownparser;
 
 import it.fulminazzo.markdownparser.nodes.HeaderNode;
 import it.fulminazzo.markdownparser.nodes.Node;
+import it.fulminazzo.markdownparser.nodes.RootNode;
+import it.fulminazzo.markdownparser.nodes.TextNode;
 import it.fulminazzo.markdownparser.utils.NodeUtils;
 
 import java.io.File;
@@ -35,6 +37,9 @@ public class MarkdownParser {
     }
 
     public static void main(String[] args) throws IOException {
+        RootNode r = new RootNode(MarkdownParser.class.getResourceAsStream("/test2.md"));
+        System.out.println(r);
+        //if (true) return;
         int tries = 1;
         Date start = new Date();
         for (int i = 0; i < tries; i++) {

@@ -34,7 +34,7 @@ public class TextNode extends TagNode {
      * @param text the text
      */
     public TextNode(String text) {
-        this(text, TextType.NORMAL);
+        setContent(text);
     }
 
     /**
@@ -71,7 +71,7 @@ public class TextNode extends TagNode {
 
     @Override
     protected void setContents(String rawContent) {
-        for (Tag tag : Tag.getTextValues()) {
+        for (Tag tag : tags) {
             Matcher matcher = Pattern.compile(tag.getRegex()).matcher(rawContent);
             if (matcher.find()) {
                 rawContent = matcher.group(1);
@@ -79,7 +79,13 @@ public class TextNode extends TagNode {
             }
         }
         String text = Tag.parseRawText(rawContent);
-        if (Tag.hasValidTag(text)) addChildNode(NodeUtils.formatRawText(text));
+        if (Tag.hasValidTag(text)) {
+            Node node = NodeUtils.formatRawText(text);
+            if (node instanceof TextNode && node.getNext() == null) {
+                textType = ((TextNode) node).textType;
+                addChildNode(node.getChild());
+            } else addChildNode(node);
+        }
         else addChildNode(new SimpleTextNode(rawContent));
     }
 

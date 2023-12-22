@@ -13,7 +13,7 @@ public class TextBlock extends Node {
      * Instantiates a new Text block.
      */
     public TextBlock() {
-
+        this(null);
     }
 
     /**
@@ -22,7 +22,7 @@ public class TextBlock extends Node {
      * @param text the text
      */
     public TextBlock(String text) {
-        this(text, TextType.NORMAL);
+        if (text != null) setContent(text);
     }
 
     /**
@@ -38,7 +38,7 @@ public class TextBlock extends Node {
 
     @Override
     public void setContent(String rawContent) {
-        setContent(rawContent, TextType.NORMAL);
+        if (rawContent != null) addChildNode(new TextNode(rawContent));
     }
 
     /**
@@ -48,7 +48,7 @@ public class TextBlock extends Node {
      * @param textType   the text type
      */
     public void setContent(String rawContent, TextType textType) {
-        addChildNode(new TextNode(rawContent, textType));
+        if (rawContent != null) addChildNode(new TextNode(rawContent, textType));
     }
 
     @Override
