@@ -6,11 +6,13 @@ import it.fulminazzo.markdownparser.nodes.Node;
 import it.fulminazzo.markdownparser.nodes.TextBlock;
 import it.fulminazzo.markdownparser.nodes.TextNode;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * A series of functions for nodes.
+ * A collection of functions for working with nodes.
  */
 public class NodeUtils {
 
@@ -53,6 +55,37 @@ public class NodeUtils {
         }
         if (raw.length == 1) mainNode = mainNode.getChild();
         return mainNode;
+    }
+
+    /**
+     * Repeat the given string for the number of times specified.
+     *
+     * @param string the string
+     * @param times  the times
+     * @return the string
+     */
+    public static String repeat(String string, int times) {
+        if (string == null) return null;
+        String result = "";
+        for (int i = 0; i < times; i++) result += string;
+        return result;
+    }
+
+    /**
+     * Convert an input stream into a string.
+     *
+     * @param inputStream the input stream
+     * @return the string
+     * @throws IOException the io exception
+     */
+    public static String readFromInputStream(InputStream inputStream) throws IOException {
+        String output = "";
+        while (inputStream.available() > 0 && output.length() < Runtime.getRuntime().freeMemory()) {
+            byte[] bytes = new byte[Math.min(2048, inputStream.available())];
+            if (inputStream.read(bytes) == -1) throw new IOException();
+            output += new String(bytes);
+        }
+        return output;
     }
 
     private static Node createNode(Node node, Node newNode) {

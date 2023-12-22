@@ -4,7 +4,9 @@ import it.fulminazzo.markdownparser.enums.Tag;
 import it.fulminazzo.markdownparser.objects.ContentMap;
 import it.fulminazzo.markdownparser.objects.TableRow;
 import it.fulminazzo.markdownparser.utils.Constants;
+import it.fulminazzo.markdownparser.utils.NodeUtils;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
  * A Node that represents a Table block.
  */
 @Getter
+@Setter
 public class TableNode extends TagNode {
     private List<TableRow> tableRows;
     private TableRow titleRow;
@@ -155,7 +158,7 @@ public class TableNode extends TagNode {
         Integer[] longestColumns = getLongestColumns();
         for (int i = 0; i < tableRow.getColumnSize(); i++) {
             String content = tableRow.getColumnContent(i);
-            content += " ".repeat(longestColumns[i] - content.length());
+            content += NodeUtils.repeat(" ", longestColumns[i] - content.length());
             output += String.format("%s | ", content);
         }
         if (output.equals("| ")) output += "|";
@@ -173,7 +176,7 @@ public class TableNode extends TagNode {
         String output = "|";
         Integer[] longestColumns = getLongestColumns();
         for (Integer longestColumn : longestColumns) {
-            content += content.repeat(longestColumn - content.length() + 2);
+            content += NodeUtils.repeat(content, longestColumn - content.length() + 2);
             output += String.format("%s|", content);
         }
         if (output.equals("|")) output += "|";

@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 /**
  * An enum that represents any tag supported by the program.
  * Each tag uses regular expressions to convert any valid string
- * in a <TAG>(Base64)</TAG> format.
+ * in a &#60;TAG&#62;(Base64)&#60;/TAG&#62; format.
  */
 @Getter
 public enum Tag {
@@ -98,7 +98,7 @@ public enum Tag {
     }
 
     /**
-     * Gets a string wrapped in &#60;TAG>&#60;/TAG>
+     * Gets a string wrapped in &#60;TAG&#62;&#60;/TAG&#62;
      *
      * @param string the string
      * @return the tagged string
@@ -124,7 +124,7 @@ public enum Tag {
     }
 
     /**
-     * Converts a string into the &#60;TAG>(Base64)&#60;/TAG> format
+     * Converts a string into the &#60;TAG&#62;(Base64)&#60;/TAG&#62; format
      * for every tag.
      *
      * @param text the text

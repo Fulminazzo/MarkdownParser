@@ -30,7 +30,7 @@ public class RootNode extends Node {
      * @throws IOException the io exception
      */
     public RootNode(InputStream inputStream) throws IOException {
-        this(new String(inputStream.readAllBytes()));
+        this(NodeUtils.readFromInputStream(inputStream));
         inputStream.close();
     }
 

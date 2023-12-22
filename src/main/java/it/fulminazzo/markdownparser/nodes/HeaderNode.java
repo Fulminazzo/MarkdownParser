@@ -2,7 +2,9 @@ package it.fulminazzo.markdownparser.nodes;
 
 import it.fulminazzo.markdownparser.enums.Tag;
 import it.fulminazzo.markdownparser.objects.ContentMap;
+import it.fulminazzo.markdownparser.utils.NodeUtils;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,9 +13,10 @@ import java.util.regex.Pattern;
  * A Node that represents a header.
  */
 @Getter
+@Setter
 public class HeaderNode extends Node {
-    protected int header;
-    protected String headerText;
+    private int header;
+    private String headerText;
 
     /**
      * Instantiates a new Header node.
@@ -66,7 +69,7 @@ public class HeaderNode extends Node {
     public String serialize() {
         String serialize = serializeChildren();
         if (serialize == null) serialize = "";
-        serialize = String.format("%s %s\n", "#".repeat(header), headerText == null ? "" : headerText) + serialize;
+        serialize = String.format("%s %s\n", NodeUtils.repeat("#", header), headerText == null ? "" : headerText) + serialize;
         return serialize;
     }
 }

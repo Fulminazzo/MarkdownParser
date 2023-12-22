@@ -2,6 +2,7 @@ package it.fulminazzo.markdownparser;
 
 import it.fulminazzo.markdownparser.nodes.HeaderNode;
 import it.fulminazzo.markdownparser.nodes.Node;
+import it.fulminazzo.markdownparser.utils.NodeUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,7 +40,7 @@ public class MarkdownParser {
         for (int i = 0; i < tries; i++) {
             Date date = new Date();
             InputStream file = MarkdownParser.class.getResourceAsStream("/test.md");
-            String content = new String(file.readAllBytes());
+            String content = NodeUtils.readFromInputStream(file);
             file.close();
 
             it.fulminazzo.markdownparser.nodes.RootNode rootNode = new it.fulminazzo.markdownparser.nodes.RootNode(content);

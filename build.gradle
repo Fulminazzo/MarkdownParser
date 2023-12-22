@@ -15,10 +15,21 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
+tasks.register('sourcesJar', Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
+}
+
+tasks.register('javadocJar', Jar) {
+    from javadoc
+    archiveClassifier = 'javadoc'
+}
+
 jar {
     manifest {
         attributes(
-                "Main-Class": "${project.group}.${project.name.toLowerCase()}.${project.name}"
+                "Main-Class": "${project.group}.${project.name.toLowerCase()}.${project.name}",
+                "Manifest-Version": "${project.version}"
         )
     }
 }
@@ -30,11 +41,9 @@ build {
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId = "${group}"
-            artifactId = "${name}"
-            version = "${version}"
-
             from components.java
+            artifact sourcesJar
+            artifact javadocJar
         }
     }
 }

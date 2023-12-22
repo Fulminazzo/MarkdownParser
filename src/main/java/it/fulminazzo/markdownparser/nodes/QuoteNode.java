@@ -3,12 +3,16 @@ package it.fulminazzo.markdownparser.nodes;
 import it.fulminazzo.markdownparser.enums.Tag;
 import it.fulminazzo.markdownparser.objects.ContentMap;
 import it.fulminazzo.markdownparser.utils.Constants;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * A Node that represents a quote block.
  */
+@Getter
+@Setter
 public class QuoteNode extends TagNode {
-    private String content;
+    private String text;
 
     /**
      * Instantiates a new Quote node.
@@ -28,12 +32,12 @@ public class QuoteNode extends TagNode {
 
     @Override
     protected void setContents(String rawContent) {
-        content = rawContent.replaceAll("\n[ \t]*> *", "\n");
+        text = rawContent.replaceAll("\n[ \t]*> *", "\n");
     }
 
     @Override
     public String serialize() {
-        String serialize = content.replace("\n", String.format("\n%s ", Constants.QUOTE_SINGLE));
+        String serialize = text.replace("\n", String.format("\n%s ", Constants.QUOTE_SINGLE));
         if (!serialize.endsWith("\n")) serialize += "\n";
         return serialize + "\n";
     }

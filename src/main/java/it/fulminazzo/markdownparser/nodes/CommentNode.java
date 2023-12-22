@@ -3,6 +3,8 @@ package it.fulminazzo.markdownparser.nodes;
 import it.fulminazzo.markdownparser.enums.Tag;
 import it.fulminazzo.markdownparser.objects.ContentMap;
 import it.fulminazzo.markdownparser.utils.Constants;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,6 +12,8 @@ import java.util.regex.Pattern;
 /**
  * A Node that represents a comment block.
  */
+@Getter
+@Setter
 public class CommentNode extends TagNode {
     private String text;
 

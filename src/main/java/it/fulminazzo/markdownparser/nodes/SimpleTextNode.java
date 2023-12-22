@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SimpleTextNode extends Node {
-    protected String text;
+    private String text;
 
     /**
      * Instantiates a new Simple text node.

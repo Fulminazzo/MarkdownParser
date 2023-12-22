@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
  * A Node that represents a list block.
  */
 public class ListNode extends TagNode {
-    private String prev;
 
     /**
      * Instantiates a new List node.
@@ -31,7 +30,6 @@ public class ListNode extends TagNode {
     protected void setContents(String rawContent) {
         Matcher matcher = Pattern.compile(Tag.LIST.getRegex()).matcher(rawContent);
         if (!matcher.find()) return;
-        prev = matcher.groupCount() > 1 ? matcher.group(2) : "";
         String[] subNodes = rawContent.split("(^|\n) ?-");
         for (String node : subNodes) {
             if (node.isEmpty()) continue;
@@ -42,7 +40,7 @@ public class ListNode extends TagNode {
 
     @Override
     public String serialize() {
-        if (prev == null || child == null) return null;
+        if (child == null) return null;
         Node node = child;
         String serialize = "";
         while (node != null) {
@@ -58,7 +56,6 @@ public class ListNode extends TagNode {
                     if (!serialize.endsWith("\n")) serialize += "\n";
                 } else {
                     serialize += String.format("%s", childNode.serialize().replace("\n\n", "\n"));
-                    //if (!serialize.endsWith("\n")) serialize += "\n";
                 }
                 childNode = childNode.getNext();
             }
