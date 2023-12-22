@@ -127,7 +127,7 @@ This project is **great!**
 Then, `**great!**`
 will be saved as a **TextNode** of type [Strong](/src/main/java/it/fulminazzo/markdownparser/enums/TextType.java)
 and its content (`great!`) will become its child in the form of [SimpleTextNode](#simpletextnode):
-```json
+```
 TextNode: {
     text-type: STRONG,
     children: {
@@ -163,7 +163,7 @@ So, for example:
 This project is great!
 ```
 Will be loaded as:
-```json
+```
 HeaderNode: {
     header-size: 1,
     header: Hello World,
@@ -189,7 +189,7 @@ This project is great!
 Don't you agree?
 ```
 In this case, since the **two headers** are of the same size, they will be loaded as **siblings**:
-```json
+```
 HeaderNode: {
     header-size: 1,
     header: Hello World,
@@ -276,7 +276,7 @@ End of the quote.
 ```
 
 Will only load as quote:
-```json
+```
 QuoteNode: {
     content: 
     > Imagination is more important than knowledge.
