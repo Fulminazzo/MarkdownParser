@@ -175,10 +175,8 @@ public class TableNode extends TagNode {
     protected String formatRow(String content) {
         String output = "|";
         Integer[] longestColumns = getLongestColumns();
-        for (Integer longestColumn : longestColumns) {
-            content += NodeUtils.repeat(content, longestColumn - content.length() + 2);
-            output += String.format("%s|", content);
-        }
+        for (Integer longestColumn : longestColumns)
+            output += String.format("%s|", NodeUtils.repeat(content, longestColumn - content.length() + 3));
         if (output.equals("|")) output += "|";
         return output;
     }
