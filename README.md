@@ -43,7 +43,36 @@ Where the content of the tags is the **Base64 encoded version of the Markdown fo
 It will later be used by other nodes that will **decode it** and **repeat this process**, 
 until a simple text is met (in which case, it will be used a [SimpleTextNode](#simpletextnode)).
 
-# Nodes
+# API
+To start using the API, you can import **MarkdownParser** either from Maven or Gradle:
+- **Maven**:
+```xml
+<repositories>
+  <repository>
+    <id>fulminazzo-repository</id>
+    <url>https://repo.fulminazzo.it/releases</url>
+  </repository>
+</repositories>
+
+<dependencies>
+  <dependency>
+    <groupId>it.fulminazzo</groupId>
+    <artifactId>MarkdownParser</artifactId>
+    <version>1.0</version>
+  </dependency>
+</dependencies>
+```
+- **Gradle**:
+```groovy
+repositories {
+    maven { url = "https://repo.fulminazzo.it/releases" }
+}
+dependencies {
+  implementation 'it.fulminazzo.MarkdownParser:1.0'
+}
+```
+
+## Nodes
 To read and translate **Markdown** data into **MarkdownParser API**, many nodes are provided. 
 
 When starting to read data, you should always start with [RootNode](#rootnode).
@@ -63,7 +92,7 @@ When starting to read data, you should always start with [RootNode](#rootnode).
 | [QuoteNode](#quotenode)           |
 | [TableNode](#tablenode)           |
 
-## Node
+### Node
 [Node](/src/main/java/it/fulminazzo/markdownparser/nodes/Node.java) 
 is the **basic implementation** for every node of the program.
 A node is simply an object that might contain some **content**
@@ -83,7 +112,7 @@ It also provides some useful functions to work with:
 - `toString()`: prints the **node name** and its [ContentMap](/src/main/java/it/fulminazzo/markdownparser/objects/ContentMap.java);
 - `write(File)` and `write(OutputStream)`: respectively call the `serialize()` method and **write the result** on the given **file** or **stream**.
 
-## RootNode
+### RootNode
 [RootNode](/src/main/java/it/fulminazzo/markdownparser/nodes/RootNode.java) 
 is the main starting point for **reading** any **Markdown data**.
 It is just a **wrapper** that contains the read data from one of its constructors:
@@ -95,7 +124,7 @@ public RootNode(InputStream inputStream) throws IOException;
 public RootNode(String rawContent);
 ```
 
-## SimpleTextNode
+### SimpleTextNode
 [SimpleTextNode](/src/main/java/it/fulminazzo/markdownparser/nodes/SimpleTextNode.java)
 represents a **simple text** in Markdown with **no formatting**.
 For example, in:
@@ -113,7 +142,7 @@ This project is **great!**
 In this case, there would be two **SimpleTextNodes**: `This project is ` and `great!`,
 that will be encapsulated in a [TextNode](#textnode).
 
-## TextNode
+### TextNode
 [TextNode](/src/main/java/it/fulminazzo/markdownparser/nodes/TextNode.java)
 represents a **text** that **supports formatting**.
 Checkout [TextType](/src/main/java/it/fulminazzo/markdownparser/enums/TextType.java)
@@ -136,7 +165,7 @@ TextNode: {
 }
 ```
 
-## LinkNode
+### LinkNode
 [LinkNode](/src/main/java/it/fulminazzo/markdownparser/nodes/LinkNode.java)
 represents a **simple link**.
 It supports **hover text**, meaning that both these formats will be valid:
@@ -145,14 +174,14 @@ It supports **hover text**, meaning that both these formats will be valid:
 [Good Java Project](https://github.com/Fulminazzo/MarkdownParser "This project is great!")
 ```
 
-## TextBlock
+### TextBlock
 A [TextBlock](/src/main/java/it/fulminazzo/markdownparser/nodes/TextBlock.java)
 is just a **wrapper** node for text blocks.
 A **text block is** considered as such when it is **separated** by a **pair of new lines** (`\n\n`).
 
 It has no special method for editing its contents, apart from the ones already discussed in the [Node section](#node).
 
-## HeaderNode
+### HeaderNode
 [HeaderNode](/src/main/java/it/fulminazzo/markdownparser/nodes/HeaderNode.java)
 represents a **header** with its contents.
 A **content of a header** is decided when a header of **same length** is met or the **end of file** is reached.
@@ -222,7 +251,7 @@ HeaderNode: {
 }
 ```
 
-## ListNode
+### ListNode
 [ListNode](/src/main/java/it/fulminazzo/markdownparser/nodes/ListNode.java)
 represents a **list block**.
 Every item of the list will be loaded as [ListElements](/src/main/java/it/fulminazzo/markdownparser/nodes/ListElement.java),
@@ -230,7 +259,7 @@ which are just another **wrapper** containing **any other node** (even another L
 
 Therefore, to **edit the contents** of a **ListNode**, you will have to access and modify its **ListElement** children.
 
-## CodeNode
+### CodeNode
 [CodeNode](/src/main/java/it/fulminazzo/markdownparser/nodes/CodeNode.java)
 represents a **code block**.
 It supports both **single** and **triple quotes**, as well as **multi-lines** blocks:
@@ -246,7 +275,7 @@ It supports both **single** and **triple quotes**, as well as **multi-lines** bl
 **NOTE**: There is no operation to recognize the validity of the specified language, 
 so anything specified in the correct format will be taken as such.
 
-## CommentNode
+### CommentNode
 [CommentNode](/src/main/java/it/fulminazzo/markdownparser/nodes/CommentNode.java)
 represents a **comment block**.
 It supports both **Markdown** and **HTML comments**:
@@ -259,7 +288,7 @@ By default, **CommentNode** will be **shown** when calling the `serialize()` met
 This is because **MarkdownParser**'s primary focus is to **programmatically create Markdown text**.
 However, if you want to **disable comments**, use `CommentNode#setVisible(boolean)`.
 
-## QuoteNode
+### QuoteNode
 [QuoteNode](/src/main/java/it/fulminazzo/markdownparser/nodes/QuoteNode.java)
 represents a **quote block**.
 A quote ends when a **pair of new lines** (`\n\n`) is **found**, regardless of the spaces between them.
@@ -286,7 +315,7 @@ QuoteNode: {
 }
 ```
 
-## TableNode
+### TableNode
 [TableNode](/src/main/java/it/fulminazzo/markdownparser/nodes/TableNode.java)
 represents a **table**.
 In **MarkdownParser**, only a **maximum number of columns are supported**.
