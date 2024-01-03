@@ -67,6 +67,7 @@ To start using the API, you can import **MarkdownParser** either from Maven or G
 repositories {
     maven { url = "https://repo.fulminazzo.it/releases" }
 }
+
 dependencies {
   implementation 'it.fulminazzo.MarkdownParser:1.0'
 }
