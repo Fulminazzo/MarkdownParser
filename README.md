@@ -53,7 +53,8 @@ To start using the API, you can import **MarkdownParser** either from Maven or G
     <url>https://repo.fulminazzo.it/releases</url>
   </repository>
 </repositories>
-
+```
+```xml
 <dependencies>
   <dependency>
     <groupId>it.fulminazzo</groupId>
